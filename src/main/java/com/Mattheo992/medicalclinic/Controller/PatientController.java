@@ -1,5 +1,4 @@
 package com.Mattheo992.medicalclinic.Controller;
-
 import com.Mattheo992.medicalclinic.Model.Patient;
 import com.Mattheo992.medicalclinic.Service.PatientService;
 import lombok.RequiredArgsConstructor;
