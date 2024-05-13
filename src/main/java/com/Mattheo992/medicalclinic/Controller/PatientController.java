@@ -27,7 +27,7 @@ public class PatientController {
         patientService.addPatient(patient);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{email}")
     public void deletePatient(@PathVariable String email) {
         patientService.deletePatient(email);
     }
