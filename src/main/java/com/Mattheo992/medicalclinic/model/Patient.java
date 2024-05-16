@@ -1,6 +1,9 @@
-package com.Mattheo992.medicalclinic.Model;
+package com.Mattheo992.medicalclinic.model;
 
 import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class Patient {
@@ -11,5 +14,5 @@ private String email;
     private String firstName;
     private String lastName;
     private String phoneNumber;
-    private String birthday;
+    private LocalDate birthday;
 }
