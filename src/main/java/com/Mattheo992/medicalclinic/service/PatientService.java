@@ -1,7 +1,9 @@
 package com.Mattheo992.medicalclinic.service;
 
 import com.Mattheo992.medicalclinic.model.Patient;
+import com.Mattheo992.medicalclinic.model.PatientDto;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +14,16 @@ import java.util.List;
 public class PatientService {
     private final PatientRepository patientRepository;
 
-    public List<Patient> GetPatients() {
-        return patientRepository.getPatients();
+    public List<PatientDto> GetPatients() {
+        return patientRepository.getPatients().stream()
+                .map(this::dtoFromPatient)
+                .toList();
+
     }
 
-    public Patient getPatient(String email) {
-
+    public PatientDto getPatient(String email) {
         return patientRepository.getPatient(email)
+                .map(this::dtoFromPatient)
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));
     }
 
@@ -44,6 +49,10 @@ public class PatientService {
         if (patientRepository.getPatient(email).isPresent()) {
             throw new IllegalArgumentException("Patient with given email already exists");
         }
+    }
+    private PatientDto dtoFromPatient(Patient patient){
+        return new PatientDto(patient.getId(), patient.getEmail(), patient.getFirstName(), patient.getLastName()
+                , patient.getBirthday() );
     }
 }
 

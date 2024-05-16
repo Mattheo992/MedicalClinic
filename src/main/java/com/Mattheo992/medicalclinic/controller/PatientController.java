@@ -1,6 +1,7 @@
 package com.Mattheo992.medicalclinic.controller;
 
 import com.Mattheo992.medicalclinic.model.Patient;
+import com.Mattheo992.medicalclinic.model.PatientDto;
 import com.Mattheo992.medicalclinic.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,13 +17,14 @@ public class PatientController {
     private final PatientService patientService;
 
     @GetMapping
-    public List<Patient> getPatients() {
+    public List<PatientDto> getPatients() {
         return patientService.GetPatients();
     }
 
     @GetMapping("/{email}")
-    public Patient getPatient(@PathVariable String email) {
-        return patientService.getPatient(email);
+    public PatientDto getPatient(@PathVariable String email) {
+        PatientDto patient = patientService.getPatient(email);
+        return patient;
     }
 
     @PostMapping
