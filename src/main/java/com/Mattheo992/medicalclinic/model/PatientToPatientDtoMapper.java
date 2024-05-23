@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public interface PatientToPatientDtoMapper {
    PatientDto sourceToDestination(Patient source);
-//   Patient sourceToDestination(PatientDto source);
+   Patient sourceToDestination(PatientDto source);
     }
 

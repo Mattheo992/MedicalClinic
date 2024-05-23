@@ -18,7 +18,7 @@ public class PatientController {
 
     @GetMapping
     public List<PatientDto> getPatients() {
-        return patientService.GetPatients();
+        return patientService.getPatients();
     }
 
     @GetMapping("/{email}")
