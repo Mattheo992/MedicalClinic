@@ -2,9 +2,11 @@ package com.Mattheo992.medicalclinic.service;
 
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.PatientDto;
+import com.Mattheo992.medicalclinic.model.PatientToPatientDtoMapper;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,18 +14,20 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class PatientService {
+
     private final PatientRepository patientRepository;
+    private final PatientToPatientDtoMapper patientToPatientDtoMapper;
 
     public List<PatientDto> GetPatients() {
         return patientRepository.getPatients().stream()
-                .map(this::dtoFromPatient)
+                .map(patientToPatientDtoMapper::sourceToDestination)
                 .toList();
 
     }
 
     public PatientDto getPatient(String email) {
         return patientRepository.getPatient(email)
-                .map(this::dtoFromPatient)
+                .map(patientToPatientDtoMapper::sourceToDestination)
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));
     }
 
@@ -38,7 +42,7 @@ public class PatientService {
     }
 
     public Patient editPatient(String email, Patient newPatient) {
-       return patientRepository.editPatientByEmail(email, newPatient);
+        return patientRepository.editPatientByEmail(email, newPatient);
     }
 
     public Patient editPassword(String email, Patient newPatient) {
@@ -50,9 +54,4 @@ public class PatientService {
             throw new IllegalArgumentException("Patient with given email already exists");
         }
     }
-    private PatientDto dtoFromPatient(Patient patient){
-        return new PatientDto(patient.getId(), patient.getEmail(), patient.getFirstName(), patient.getLastName()
-                , patient.getBirthday() );
-    }
 }
-
