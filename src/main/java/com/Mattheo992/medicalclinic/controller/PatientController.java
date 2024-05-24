@@ -3,18 +3,19 @@ package com.Mattheo992.medicalclinic.controller;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.PatientDto;
 import com.Mattheo992.medicalclinic.service.PatientService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/patients")
 public class PatientController {
     private final PatientService patientService;
+
+    public PatientController(PatientService patientService) {
+        this.patientService = patientService;
+    }
 
     @GetMapping
     public List<PatientDto> getPatients() {
@@ -23,8 +24,7 @@ public class PatientController {
 
     @GetMapping("/{email}")
     public PatientDto getPatient(@PathVariable String email) {
-        PatientDto patient = patientService.getPatient(email);
-        return patient;
+        return patientService.getPatient(email);
     }
 
     @PostMapping
@@ -44,8 +44,7 @@ public class PatientController {
     }
 
     @PatchMapping("/{email}/password")
-    public Patient editPassword(@PathVariable String email, @RequestBody Patient patient) {
-        return patientService.editPassword(email, patient);
+    public Patient editPassword(@PathVariable String email, @RequestBody Patient newPatient) {
+        return patientService.editPassword(email, newPatient);
     }
-
 }
