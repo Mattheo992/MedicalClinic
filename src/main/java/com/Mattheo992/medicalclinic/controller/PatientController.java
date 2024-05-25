@@ -2,20 +2,20 @@ package com.Mattheo992.medicalclinic.controller;
 
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.PatientDto;
+import com.Mattheo992.medicalclinic.model.PatientWithUserDto;
+import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.service.PatientService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/patients")
 public class PatientController {
     private final PatientService patientService;
-
-    public PatientController(PatientService patientService) {
-        this.patientService = patientService;
-    }
 
     @GetMapping
     public List<PatientDto> getPatients() {
@@ -32,6 +32,11 @@ public class PatientController {
         return patientService.addPatient(patient);
     }
 
+    @PostMapping("/with-user")
+    public Patient addPatientWithUser(@RequestBody PatientWithUserDto patientWithUserDto) {
+        return patientService.addPatientWithUser(patientWithUserDto.getPatient(), patientWithUserDto.getUser());
+    }
+
     @DeleteMapping("/{email}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePatient(@PathVariable("email") String email) {
@@ -44,7 +49,7 @@ public class PatientController {
     }
 
     @PatchMapping("/{email}/password")
-    public Patient editPassword(@PathVariable String email, @RequestBody Patient newPatient) {
-        return patientService.editPassword(email, newPatient);
+    public Patient editPassword(@PathVariable String email, @RequestBody String newPassword) {
+        return patientService.editPassword(email, newPassword);
     }
 }

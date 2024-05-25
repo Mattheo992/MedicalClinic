@@ -1,9 +1,6 @@
 package com.Mattheo992.medicalclinic.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,10 +17,13 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String email;
-    private String password;
     private String idCardNo;
     private String firstName;
     private String lastName;
     private String phoneNumber;
     private LocalDate birthday;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
