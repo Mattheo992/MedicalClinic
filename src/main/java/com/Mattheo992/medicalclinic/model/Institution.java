@@ -26,5 +26,5 @@ public class Institution {
 
     @ManyToMany(mappedBy = "institutions")
     @JsonIgnore
-    private Set<Doctor> doctors;
+    private List<Doctor> doctors;
 }
