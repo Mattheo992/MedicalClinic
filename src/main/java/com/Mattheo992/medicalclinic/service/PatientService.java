@@ -2,7 +2,7 @@ package com.Mattheo992.medicalclinic.service;
 
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.PatientDto;
-import com.Mattheo992.medicalclinic.model.PatientToPatientDtoMapper;
+import com.Mattheo992.medicalclinic.model.PatientDtoMapper;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.repository.UserRepository;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class PatientService {
 
     private final PatientRepository patientRepository;
-    private final PatientToPatientDtoMapper patientToPatientDtoMapper;
+    private final PatientDtoMapper patientToPatientDtoMapper;
     private final UserRepository userRepository;
 
     public List<PatientDto> getPatients() {

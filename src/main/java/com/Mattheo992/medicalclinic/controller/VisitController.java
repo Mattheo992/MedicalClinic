@@ -1,7 +1,8 @@
 package com.Mattheo992.medicalclinic.controller;
 
-import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.Visit;
+import com.Mattheo992.medicalclinic.model.VisitDto;
+import com.Mattheo992.medicalclinic.model.VisitMapper;
 import com.Mattheo992.medicalclinic.service.VisitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/visits")
@@ -19,23 +19,23 @@ import java.util.Map;
 public class VisitController {
 
     private final VisitService visitService;
+    private final VisitMapper visitMapper;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ResponseEntity<Visit> createVisit(@RequestBody Map<String, Object> requestBody) {
-        LocalDateTime startDate = LocalDateTime.parse((CharSequence) requestBody.get("startDate"));
-        LocalDateTime endDate = LocalDateTime.parse((CharSequence) requestBody.get("endDate"));
-        Visit createdVisit = visitService.createVisit(startDate, endDate);
-        return ResponseEntity.ok(createdVisit);
+    public VisitDto createVisit(@RequestBody VisitDto visitDto) {
+        Visit createdVisit = visitService.createVisit(visitDto);
+        VisitDto createdVisitDto = visitMapper.sourceToDestination(createdVisit);
+        return createdVisitDto;
     }
 
 
-    @PostMapping("/{visitId}/register/{patientId}")
+    @PostMapping("/{visitId}/patients/{patientId}")
     public void registerPatient(
             @PathVariable("visitId") Long visitId,
             @PathVariable("patientId") Long patientId) {
         visitService.registerPatientForVisit(visitId, patientId);
     }
-
 
     @GetMapping("/patient/{patientId}")
     public List<Visit> getVisitsForPatient(

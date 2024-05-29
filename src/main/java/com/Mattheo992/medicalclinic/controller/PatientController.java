@@ -3,7 +3,6 @@ package com.Mattheo992.medicalclinic.controller;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.PatientDto;
 import com.Mattheo992.medicalclinic.model.PatientWithUserDto;
-import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,16 +1,11 @@
 package com.Mattheo992.medicalclinic.service;
 
-import com.Mattheo992.medicalclinic.model.Patient;
-import com.Mattheo992.medicalclinic.model.PatientDto;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.control.MappingControl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
