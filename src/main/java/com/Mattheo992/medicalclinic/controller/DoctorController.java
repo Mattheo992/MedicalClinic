@@ -27,7 +27,7 @@ public class DoctorController {
     }
 
     @GetMapping("/{doctorId}/institutions")
-    public List<Institution> getInstitutionsForDoctor(@PathVariable Long doctorId) {
+    public Set<Institution> getInstitutionsForDoctor(@PathVariable Long doctorId) {
         return doctorService.getInstitutionsForDoctor(doctorId);
     }
 }

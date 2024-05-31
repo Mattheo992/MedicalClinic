@@ -2,6 +2,8 @@ package com.Mattheo992.medicalclinic.service;
 
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Institution;
+import com.Mattheo992.medicalclinic.model.InstitutionDto;
+import com.Mattheo992.medicalclinic.model.InstitutionMapper;
 import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import com.Mattheo992.medicalclinic.repository.InstitutionRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +16,18 @@ import java.util.List;
 public class InstitutionService {
     private final InstitutionRepository institutionRepository;
     private final DoctorRepository doctorRepository;
+    private final InstitutionMapper institutionMapper;
 
-    public Institution addInstitution(Institution institution) {
+
+    public InstitutionDto addInstitution(InstitutionDto institutionDto) {
+        Institution institution = institutionMapper.toEntity(institutionDto);
         checkIfNameIsAvailable(institution.getInstitutionName());
-        return institutionRepository.save(institution);
+        return institutionMapper.toDto(institutionRepository.save(institution));
     }
 
-    public List<Institution> getInstitutions() {
-        return institutionRepository.findAll();
+    public List<InstitutionDto> getInstitutions() {
+        List<Institution> institutions = institutionRepository.findAll();
+        return institutionMapper.toDto(institutions);
     }
 
     public void addDoctorToInstitution(Long institutionId, Long doctorId) {
@@ -30,8 +36,8 @@ public class InstitutionService {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
 
-        doctor.getInstitutions().add(institution);
-        doctorRepository.save(doctor);
+        institution.getDoctors().add(doctor);
+        institutionRepository.save(institution);
     }
 
     private void checkIfNameIsAvailable(String name) {

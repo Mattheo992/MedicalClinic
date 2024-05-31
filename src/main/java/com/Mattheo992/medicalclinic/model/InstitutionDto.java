@@ -1,17 +1,17 @@
 package com.Mattheo992.medicalclinic.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import jakarta.persistence.*;
 import java.util.Set;
 
-@Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class Institution {
+@Entity
+public class InstitutionDto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,6 +21,6 @@ public class Institution {
     private String streetName;
     private Long numberOfStreet;
 
-    @ManyToMany(mappedBy = "institutions")
-    private Set<Doctor> doctors;
+    @Transient
+    private Set<SimpleDoctorDto> doctors;
 }

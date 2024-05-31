@@ -1,6 +1,6 @@
 package com.Mattheo992.medicalclinic.controller;
 
-import com.Mattheo992.medicalclinic.model.Institution;
+import com.Mattheo992.medicalclinic.model.InstitutionDto;
 import com.Mattheo992.medicalclinic.service.InstitutionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,12 @@ public class InstitutionController {
     private final InstitutionService institutionService;
 
     @PostMapping
-    public Institution addInstitution(@RequestBody Institution institution) {
-        return institutionService.addInstitution(institution);
+    public InstitutionDto addInstitution(@RequestBody InstitutionDto institutionDto) {
+        return institutionService.addInstitution(institutionDto);
     }
 
     @GetMapping
-    public List<Institution> getInstitutions() {
+    public List<InstitutionDto> getInstitutions() {
         return institutionService.getInstitutions();
     }
 

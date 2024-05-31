@@ -23,10 +23,10 @@ public class DoctorService {
 
     public List<DoctorDto> getDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();
-        return doctorMapper.sourceToDestination(doctors);
+        return doctorMapper.toDto(doctors);
     }
 
-    public List<Institution> getInstitutionsForDoctor(Long doctorId) {
+    public Set<Institution> getInstitutionsForDoctor(Long doctorId) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
         return doctor.getInstitutions();
