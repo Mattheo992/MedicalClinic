@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.NaturalId;
+
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -23,4 +26,17 @@ public class InstitutionDto {
 
     @Transient
     private Set<SimpleDoctorDto> doctors;
+
+    @Override
+    public String toString() {
+        return "InstitutionDto{" +
+                "id : " + id +
+                ", institution name :'" + institutionName + '\'' +
+                ", city : '" + city + '\'' +
+                ", zip code : '" + zipCode + '\'' +
+                ", street name : '" + streetName + '\'' +
+                ", number of street : " + numberOfStreet +
+                ", doctors : " + doctors +
+                '}';
+    }
 }

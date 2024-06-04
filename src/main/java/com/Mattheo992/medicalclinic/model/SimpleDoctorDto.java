@@ -19,4 +19,5 @@ public class SimpleDoctorDto {
     private String name;
     private String surname;
     private String specialization;
+
 }

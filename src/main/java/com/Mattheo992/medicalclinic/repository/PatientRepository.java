@@ -13,8 +13,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     boolean existsByEmail(String email);
 
-    void deleteByEmail(String email);
-
     default Patient editPatientByEmail(String email, Patient newPatient) {
         Patient patient = findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));

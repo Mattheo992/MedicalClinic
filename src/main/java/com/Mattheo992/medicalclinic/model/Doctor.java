@@ -6,8 +6,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NaturalId;
 
+import java.util.Objects;
 import java.util.Set;
+
 
 @Entity
 @AllArgsConstructor
@@ -23,6 +26,34 @@ public class Doctor {
     private String specialization;
     private String email;
     private String password;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Doctor))
+            return false;
+        Doctor doctor = (Doctor) o;
+        return id != null &&
+                id.equals(doctor.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Doctor{" +
+                "Id : " + id +
+                ", name : '" + name + '\'' +
+                ", surname : '" + surname + '\'' +
+                ", specialization : '" + specialization + '\'' +
+                ", email : '" + email + '\'' +
+                ", password : '" + password + '\'' +
+                ", institutions : " + institutions +
+                '}';
+    }
 
     @ManyToMany
     @JoinTable(
