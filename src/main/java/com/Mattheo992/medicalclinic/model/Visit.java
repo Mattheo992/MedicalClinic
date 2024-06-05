@@ -21,6 +21,11 @@ public class Visit {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -45,9 +50,4 @@ public class Visit {
                 ", patient : " + patient +
                 '}';
     }
-
-    @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "patient_id")
-    private Patient patient;
 }

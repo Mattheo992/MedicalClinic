@@ -5,7 +5,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Mapper(componentModel = "spring")
-public interface VisitMapper {
-    VisitDto visitDto(Visit source);
-    Visit destinationToSource (VisitDto destination);
+public interface UserMapper {
+    UserDto userToUserDto(User user);
+
+    User userDtoToUser(UserDto userDto);
 }

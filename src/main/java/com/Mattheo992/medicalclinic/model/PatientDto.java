@@ -16,6 +16,7 @@ public class PatientDto {
     private String firstName;
     private String lastName;
     private LocalDate birthday;
+    private UserDto user;
 
     @Override
     public String toString() {
@@ -25,6 +26,7 @@ public class PatientDto {
                 ", first name : '" + firstName + '\'' +
                 ", last name : '" + lastName + '\'' +
                 ", birthday : " + birthday +
+                ", user : " + user +
                 '}';
     }
 }

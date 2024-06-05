@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PatientWithUserDto {
-    private Patient patient;
-    private User user;
+public class UserDto {
+    private Long id;
+    private String username;
+    private String password;
 }

@@ -12,9 +12,6 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VisitDto {
-
-
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-
 }

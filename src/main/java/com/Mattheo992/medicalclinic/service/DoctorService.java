@@ -6,6 +6,9 @@ import com.Mattheo992.medicalclinic.model.DoctorMapper;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,9 +24,9 @@ public class DoctorService {
         return doctorRepository.save(doctor);
     }
 
-    public List<DoctorDto> getDoctors() {
-        List<Doctor> doctors = doctorRepository.findAll();
-        return doctorMapper.toDto(doctors);
+    public Page<DoctorDto> getDoctors(Pageable pageable) {
+        Page<Doctor> doctorsPage = doctorRepository.findAll(pageable);
+        return doctorsPage.map(doctorMapper::toDto);
     }
 
     public Set<Institution> getInstitutionsForDoctor(Long doctorId) {

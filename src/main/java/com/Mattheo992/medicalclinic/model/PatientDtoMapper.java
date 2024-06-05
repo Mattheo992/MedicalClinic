@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Mapper(componentModel = "spring")
 @Component
 public interface PatientDtoMapper {
-   PatientDto sourceToDestination(Patient source);
-   Patient sourceToDestination(PatientDto source);
-    }
+    PatientDto dto(Patient source);
 
+    Patient dto(PatientDto source);
+}

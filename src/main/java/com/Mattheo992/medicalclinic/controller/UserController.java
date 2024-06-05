@@ -3,6 +3,9 @@ package com.Mattheo992.medicalclinic.controller;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +18,10 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public Page<User> getAllUsers(@RequestParam int page,
+                                  @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userService.getAllUsers(pageable);
     }
 
     @GetMapping("/{id}")

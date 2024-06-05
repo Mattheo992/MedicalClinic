@@ -3,6 +3,9 @@ package com.Mattheo992.medicalclinic.controller;
 import com.Mattheo992.medicalclinic.model.InstitutionDto;
 import com.Mattheo992.medicalclinic.service.InstitutionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +23,10 @@ public class InstitutionController {
     }
 
     @GetMapping
-    public List<InstitutionDto> getInstitutions() {
-        return institutionService.getInstitutions();
+    public Page<InstitutionDto> getInstitutions(@RequestParam int page,
+                                                @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return institutionService.getInstitutions(pageable);
     }
 
     @PostMapping("/{institutionId}/doctors/{doctorId}")

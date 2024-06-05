@@ -27,6 +27,15 @@ public class Patient {
     private String phoneNumber;
     private LocalDate birthday;
 
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "patient")
+    @JsonIgnore
+    private List<Visit> visits;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -42,7 +51,6 @@ public class Patient {
         return getClass().hashCode();
     }
 
-
     @Override
     public String toString() {
         return "Patient{" +
@@ -57,12 +65,4 @@ public class Patient {
                 ", visits : " + visits +
                 '}';
     }
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @OneToMany(mappedBy = "patient")
-    @JsonIgnore
-    private List<Visit> visits;
 }

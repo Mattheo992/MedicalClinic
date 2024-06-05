@@ -5,12 +5,9 @@ import com.Mattheo992.medicalclinic.model.VisitDto;
 import com.Mattheo992.medicalclinic.model.VisitMapper;
 import com.Mattheo992.medicalclinic.service.VisitService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -25,10 +22,9 @@ public class VisitController {
     @PostMapping
     public VisitDto createVisit(@RequestBody VisitDto visitDto) {
         Visit createdVisit = visitService.createVisit(visitDto);
-        VisitDto createdVisitDto = visitMapper.sourceToDestination(createdVisit);
+        VisitDto createdVisitDto = visitMapper.visitDto(createdVisit);
         return createdVisitDto;
     }
-
 
     @PostMapping("/{visitId}/patients/{patientId}")
     public void registerPatient(

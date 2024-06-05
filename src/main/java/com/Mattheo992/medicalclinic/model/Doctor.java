@@ -11,12 +11,10 @@ import org.hibernate.annotations.NaturalId;
 import java.util.Objects;
 import java.util.Set;
 
-
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-
 public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +24,14 @@ public class Doctor {
     private String specialization;
     private String email;
     private String password;
+
+    @ManyToMany
+    @JoinTable(
+            name = "doctor_institution",
+            joinColumns = @JoinColumn(name = "doctor_id"),
+            inverseJoinColumns = @JoinColumn(name = "institution_id")
+    )
+    private Set<Institution> institutions;
 
     @Override
     public boolean equals(Object o) {
@@ -54,12 +60,4 @@ public class Doctor {
                 ", institutions : " + institutions +
                 '}';
     }
-
-    @ManyToMany
-    @JoinTable(
-            name = "doctor_institution",
-            joinColumns = @JoinColumn(name = "doctor_id"),
-            inverseJoinColumns = @JoinColumn(name = "institution_id")
-    )
-    private Set<Institution> institutions;
 }

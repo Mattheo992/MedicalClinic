@@ -1,13 +1,13 @@
 package com.Mattheo992.medicalclinic.service;
 
-import com.Mattheo992.medicalclinic.model.Doctor;
-import com.Mattheo992.medicalclinic.model.Institution;
-import com.Mattheo992.medicalclinic.model.InstitutionDto;
-import com.Mattheo992.medicalclinic.model.InstitutionMapper;
+import com.Mattheo992.medicalclinic.model.*;
 import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import com.Mattheo992.medicalclinic.repository.InstitutionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -25,9 +25,9 @@ public class InstitutionService {
         return institutionMapper.toDto(institutionRepository.save(institution));
     }
 
-    public List<InstitutionDto> getInstitutions() {
-        List<Institution> institutions = institutionRepository.findAll();
-        return institutionMapper.toDto(institutions);
+    public Page<InstitutionDto> getInstitutions (Pageable pageable) {
+        Page<Institution> intitutionPage = institutionRepository.findAll(pageable);
+        return intitutionPage.map(institutionMapper::toDto);
     }
 
     public void addDoctorToInstitution(Long institutionId, Long doctorId) {

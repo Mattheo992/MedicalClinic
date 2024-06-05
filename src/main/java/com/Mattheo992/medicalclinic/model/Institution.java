@@ -23,6 +23,9 @@ public class Institution {
     private String streetName;
     private Long numberOfStreet;
 
+    @ManyToMany(mappedBy = "institutions")
+    private Set<Doctor> doctors;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -38,7 +41,6 @@ public class Institution {
         return getClass().hashCode();
     }
 
-
     @Override
     public String toString() {
         return "Institution{" +
@@ -51,7 +53,4 @@ public class Institution {
                 ", doctors : " + doctors +
                 '}';
     }
-
-    @ManyToMany(mappedBy = "institutions")
-    private Set<Doctor> doctors;
 }

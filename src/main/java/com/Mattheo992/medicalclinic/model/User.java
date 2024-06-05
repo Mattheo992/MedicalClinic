@@ -17,14 +17,16 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NaturalId
     private String username;
     private String password;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Patient patient;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if  (!( o instanceof User))
+        if (!(o instanceof User))
             return false;
         User user = (User) o;
         return id != null &&
@@ -45,8 +47,4 @@ public class User {
                 ", patient : " + patient +
                 '}';
     }
-
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Patient patient;
 }

@@ -2,9 +2,12 @@ package com.Mattheo992.medicalclinic.controller;
 
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.PatientDto;
-import com.Mattheo992.medicalclinic.model.PatientWithUserDto;
+import com.Mattheo992.medicalclinic.model.UserDto;
 import com.Mattheo992.medicalclinic.service.PatientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +20,10 @@ public class PatientController {
     private final PatientService patientService;
 
     @GetMapping
-    public List<PatientDto> getPatients() {
-        return patientService.getPatients();
+    public Page<PatientDto> getPatients(@RequestParam int page,
+                                        @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return patientService.getPatients(pageable);
     }
 
     @GetMapping("/{email}")
@@ -32,8 +37,8 @@ public class PatientController {
     }
 
     @PostMapping("/with-user")
-    public Patient addPatientWithUser(@RequestBody PatientWithUserDto patientWithUserDto) {
-        return patientService.addPatientWithUser(patientWithUserDto.getPatient(), patientWithUserDto.getUser());
+    public PatientDto addPatientWithUser(@RequestBody PatientDto patientDto) {
+        return patientService.addPatientWithUser(patientDto);
     }
 
     @DeleteMapping("/{email}")
@@ -43,8 +48,8 @@ public class PatientController {
     }
 
     @PutMapping("/{email}")
-    public Patient editPatient(@PathVariable("email") String email, @RequestBody Patient newPatient) {
-        return patientService.editPatient(email, newPatient);
+    public PatientDto editPatient(@PathVariable("email") String email, @RequestBody PatientDto patientDto) {
+        return patientService.editPatient(email, patientDto);
     }
 
     @PatchMapping("/{email}/password")
