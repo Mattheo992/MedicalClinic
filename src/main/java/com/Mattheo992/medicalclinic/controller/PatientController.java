@@ -20,9 +20,7 @@ public class PatientController {
     private final PatientService patientService;
 
     @GetMapping
-    public Page<PatientDto> getPatients(@RequestParam int page,
-                                        @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public List<PatientDto> getPatients(Pageable pageable) {
         return patientService.getPatients(pageable);
     }
 

@@ -4,10 +4,12 @@ import com.Mattheo992.medicalclinic.model.*;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,9 +23,10 @@ public class PatientService {
     private final PatientDtoMapper patientDtoMapper;
     private final UserMapper userMapper;
 
-    public Page<PatientDto> getPatients (Pageable pageable) {
-        Page<Patient> patientPage = patientRepository.findAll(pageable);
-        return patientPage.map(patientDtoMapper::dto);
+    public List<PatientDto> getPatients(Pageable pageable) {
+        Pageable sortedByEmail = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),Sort.by("email"));
+        List<Patient> patients = patientRepository.findAll(sortedByEmail).getContent();
+        return patientDtoMapper.toDtos(patients);
     }
 
     public PatientDto getPatient(String email) {
@@ -32,10 +35,13 @@ public class PatientService {
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));
     }
 
+    @Transactional
     public Patient addPatient(Patient patient) {
         checkIfEmailIsAvailable(patient.getEmail());
         return patientRepository.save(patient);
     }
+
+    @Transactional
     public PatientDto addPatientWithUser(PatientDto patientDto) {
         checkIfEmailIsAvailable(patientDto.getEmail());
         User user = userMapper.userDtoToUser(patientDto.getUser());
@@ -46,6 +52,7 @@ public class PatientService {
         return patientDtoMapper.dto(savedPatient);
     }
 
+    @Transactional
     public void deletePatient(String email) {
         Patient patient = patientRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));
@@ -56,14 +63,16 @@ public class PatientService {
         patientRepository.delete(patient);
     }
 
+    @Transactional
     public PatientDto editPatient(String email, PatientDto patientDto) {
-        Patient patient = patientRepository.findByEmail(email).orElseThrow(()->new IllegalArgumentException
+        Patient patient = patientRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException
                 ("Patient with given email does not exist"));
         Patient updatedPatient = patientDtoMapper.dto(patientDto);
         updatedPatient.setId(patient.getId());
         return patientDtoMapper.dto(patientRepository.save(updatedPatient));
     }
 
+    @Transactional
     public Patient editPassword(String email, String newPassword) {
         Patient patient = patientRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));

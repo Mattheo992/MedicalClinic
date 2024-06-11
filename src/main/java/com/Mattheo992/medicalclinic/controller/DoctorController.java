@@ -25,9 +25,7 @@ public class DoctorController {
     }
 
     @GetMapping
-    public Page<DoctorDto> getDoctors (@RequestParam int page,
-                                       @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public List<DoctorDto> getDoctors (Pageable pageable) {
         return doctorService.getDoctors(pageable);
     }
 

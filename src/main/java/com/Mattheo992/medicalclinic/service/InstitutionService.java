@@ -4,10 +4,12 @@ import com.Mattheo992.medicalclinic.model.*;
 import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import com.Mattheo992.medicalclinic.repository.InstitutionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,18 +20,20 @@ public class InstitutionService {
     private final DoctorRepository doctorRepository;
     private final InstitutionMapper institutionMapper;
 
-
+@Transactional
     public InstitutionDto addInstitution(InstitutionDto institutionDto) {
         Institution institution = institutionMapper.toEntity(institutionDto);
         checkIfNameIsAvailable(institution.getInstitutionName());
         return institutionMapper.toDto(institutionRepository.save(institution));
     }
 
-    public Page<InstitutionDto> getInstitutions (Pageable pageable) {
-        Page<Institution> intitutionPage = institutionRepository.findAll(pageable);
-        return intitutionPage.map(institutionMapper::toDto);
+    public List<InstitutionDto> getInstitutions (Pageable pageable) {
+        Pageable sortedByInstitutionName = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("institutionName"));
+        List<Institution> institutions = institutionRepository.findAll(sortedByInstitutionName).getContent();
+        return institutionMapper.toListDtos(institutions);
     }
 
+    @Transactional
     public void addDoctorToInstitution(Long institutionId, Long doctorId) {
         Institution institution = institutionRepository.findById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));

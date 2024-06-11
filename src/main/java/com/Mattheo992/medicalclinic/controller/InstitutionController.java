@@ -23,9 +23,7 @@ public class InstitutionController {
     }
 
     @GetMapping
-    public Page<InstitutionDto> getInstitutions(@RequestParam int page,
-                                                @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public List<InstitutionDto> getInstitutions(Pageable pageable) {
         return institutionService.getInstitutions(pageable);
     }
 

@@ -6,6 +6,7 @@ import com.Mattheo992.medicalclinic.model.VisitDto;
 import com.Mattheo992.medicalclinic.model.VisitMapper;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.repository.VisitRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class VisitService {
         return visitRepository.findByPatientId(patientId);
     }
 
+  @Transactional
     public Visit registerPatientForVisit(Long visitId, Long patientId) {
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new IllegalArgumentException("Visit with given id does not exist."));
@@ -33,11 +35,11 @@ public class VisitService {
 
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given id does not exist."));
-        
         visit.setPatient(patient);
         return visitRepository.save(visit);
     }
 
+    @Transactional
     public Visit createVisit(VisitDto visitDto) {
         LocalDateTime startDate = visitDto.getStartDate();
         LocalDateTime endDate = visitDto.getEndDate();

@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -20,13 +22,15 @@ public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final DoctorMapper doctorMapper;
 
+    @Transactional
     public Doctor addDoctor(Doctor doctor) {
         return doctorRepository.save(doctor);
     }
 
-    public Page<DoctorDto> getDoctors(Pageable pageable) {
-        Page<Doctor> doctorsPage = doctorRepository.findAll(pageable);
-        return doctorsPage.map(doctorMapper::toDto);
+    public List<DoctorDto> getDoctors(Pageable pageable) {
+        Pageable sortedBySurname = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("surname"));
+        List<Doctor> doctors = doctorRepository.findAll(sortedBySurname).getContent();
+        return doctorMapper.toDtos(doctors);
     }
 
     public Set<Institution> getInstitutionsForDoctor(Long doctorId) {
