@@ -1,8 +1,8 @@
 package com.Mattheo992.medicalclinic.controller;
 
 import com.Mattheo992.medicalclinic.model.Visit;
-import com.Mattheo992.medicalclinic.model.VisitDto;
-import com.Mattheo992.medicalclinic.model.VisitMapper;
+import com.Mattheo992.medicalclinic.model.dtos.VisitDto;
+import com.Mattheo992.medicalclinic.model.mappers.VisitMapper;
 import com.Mattheo992.medicalclinic.service.VisitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,7 +34,7 @@ public class VisitController {
     }
 
     @GetMapping("/patient/{patientId}")
-    public List<Visit> getVisitsForPatient(
+    public List<VisitDto> getVisitsForPatient(
             @PathVariable("patientId") Long patientId) {
         return visitService.getVisitsByPatientId(patientId);
     }

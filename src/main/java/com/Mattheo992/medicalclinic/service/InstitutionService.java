@@ -1,13 +1,12 @@
 package com.Mattheo992.medicalclinic.service;
 
 import com.Mattheo992.medicalclinic.model.*;
+import com.Mattheo992.medicalclinic.model.dtos.InstitutionDto;
+import com.Mattheo992.medicalclinic.model.mappers.InstitutionMapper;
 import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import com.Mattheo992.medicalclinic.repository.InstitutionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,16 +19,15 @@ public class InstitutionService {
     private final DoctorRepository doctorRepository;
     private final InstitutionMapper institutionMapper;
 
-@Transactional
+    @Transactional
     public InstitutionDto addInstitution(InstitutionDto institutionDto) {
         Institution institution = institutionMapper.toEntity(institutionDto);
         checkIfNameIsAvailable(institution.getInstitutionName());
         return institutionMapper.toDto(institutionRepository.save(institution));
     }
 
-    public List<InstitutionDto> getInstitutions (Pageable pageable) {
-        Pageable sortedByInstitutionName = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("institutionName"));
-        List<Institution> institutions = institutionRepository.findAll(sortedByInstitutionName).getContent();
+    public List<InstitutionDto> getInstitutions(Pageable pageable) {
+        List<Institution> institutions = institutionRepository.findAll(pageable).getContent();
         return institutionMapper.toListDtos(institutions);
     }
 

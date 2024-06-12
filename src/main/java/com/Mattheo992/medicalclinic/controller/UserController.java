@@ -1,6 +1,7 @@
 package com.Mattheo992.medicalclinic.controller;
 
 import com.Mattheo992.medicalclinic.model.User;
+import com.Mattheo992.medicalclinic.model.dtos.UserDto;
 import com.Mattheo992.medicalclinic.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,8 +20,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers(Pageable pageable) {
-        return userService.getAllUsers(pageable);
+    public List<UserDto> getUsers(Pageable pageable) {
+        return userService.getUsers(pageable);
     }
 
     @GetMapping("/{id}")
@@ -31,5 +32,10 @@ public class UserController {
     @PostMapping
     public User addUser(@RequestBody User user) {
         return userService.addUser(user);
+    }
+
+    @PatchMapping("/{id}/password")
+    public String updatePassword(@PathVariable Long id, @RequestBody String newPassword) {
+        return userService.updatePassword(id, newPassword);
     }
 }

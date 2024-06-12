@@ -1,4 +1,4 @@
-package com.Mattheo992.medicalclinic.model;
+package com.Mattheo992.medicalclinic.model.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

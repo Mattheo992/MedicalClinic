@@ -1,12 +1,9 @@
 package com.Mattheo992.medicalclinic.controller;
 
 import com.Mattheo992.medicalclinic.model.Patient;
-import com.Mattheo992.medicalclinic.model.PatientDto;
-import com.Mattheo992.medicalclinic.model.UserDto;
+import com.Mattheo992.medicalclinic.model.dtos.PatientDto;
 import com.Mattheo992.medicalclinic.service.PatientService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +27,7 @@ public class PatientController {
     }
 
     @PostMapping
-    public Patient addPatient(@RequestBody Patient patient) {
+    public PatientDto addPatient(@RequestBody Patient patient) {
         return patientService.addPatient(patient);
     }
 
@@ -48,10 +45,5 @@ public class PatientController {
     @PutMapping("/{email}")
     public PatientDto editPatient(@PathVariable("email") String email, @RequestBody PatientDto patientDto) {
         return patientService.editPatient(email, patientDto);
-    }
-
-    @PatchMapping("/{email}/password")
-    public Patient editPassword(@PathVariable String email, @RequestBody String newPassword) {
-        return patientService.editPassword(email, newPassword);
     }
 }

@@ -1,11 +1,10 @@
-package com.Mattheo992.medicalclinic.model;
+package com.Mattheo992.medicalclinic.model.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor

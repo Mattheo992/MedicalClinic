@@ -1,15 +1,12 @@
 package com.Mattheo992.medicalclinic.service;
 
 import com.Mattheo992.medicalclinic.model.Doctor;
-import com.Mattheo992.medicalclinic.model.DoctorDto;
-import com.Mattheo992.medicalclinic.model.DoctorMapper;
+import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
+import com.Mattheo992.medicalclinic.model.mappers.DoctorMapper;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +25,7 @@ public class DoctorService {
     }
 
     public List<DoctorDto> getDoctors(Pageable pageable) {
-        Pageable sortedBySurname = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("surname"));
-        List<Doctor> doctors = doctorRepository.findAll(sortedBySurname).getContent();
+        List<Doctor> doctors = doctorRepository.findAll(pageable).getContent();
         return doctorMapper.toDtos(doctors);
     }
 

@@ -1,7 +1,10 @@
-package com.Mattheo992.medicalclinic.model;
+package com.Mattheo992.medicalclinic.model.mappers;
 
-import org.mapstruct.Mapper;
+import com.Mattheo992.medicalclinic.model.Doctor;
+import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
+import com.Mattheo992.medicalclinic.model.dtos.SimpleDoctorDto;
 import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
 
 import java.util.List;
 
