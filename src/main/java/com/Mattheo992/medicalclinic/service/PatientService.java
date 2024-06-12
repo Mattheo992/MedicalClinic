@@ -62,13 +62,15 @@ public class PatientService {
     }
 
     @Transactional
-    public PatientDto editPatient(String email, PatientDto updatedPatientDto) {
+    public PatientDto editPatient(String email, Patient uptadetPatient) {
         Patient patient = patientRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
-        patient.setEmail(updatedPatientDto.getEmail());
-        patient.setFirstName(updatedPatientDto.getFirstName());
-        patient.setLastName(updatedPatientDto.getLastName());
-        patient.setBirthday(updatedPatientDto.getBirthday());
+        patient.setEmail(uptadetPatient.getEmail());
+        patient.setFirstName(uptadetPatient.getFirstName());
+        patient.setLastName(uptadetPatient.getLastName());
+        patient.setBirthday(uptadetPatient.getBirthday());
+        patient.setPhoneNumber(uptadetPatient.getPhoneNumber());
+        patient.setIdCardNo(uptadetPatient.getIdCardNo());
         return patientDtoMapper.dto(patientRepository.save(patient));
     }
 
