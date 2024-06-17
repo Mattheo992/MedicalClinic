@@ -22,6 +22,14 @@ public class VisitService {
     private final PatientRepository patientRepository;
     private final VisitMapper visitMapper;
 
+    //Case 1: W przypadku gdy wywołany przez metodę findById z patientRepository zwraca pustego Optional to powinno rzucić
+    // wyjątkiem, że nie znaleziono pacjenta o podanym Id.
+    //Case 2: W przypadku gdy wywołany przez metodę findById z patientRepository zwraca Optional<Patient>, metoda
+    // findByPatientId z visitRepository przekazuje listę wizyt dla przekazanego pacjenta jeśli ten posiada przypisane wizyty,
+    // a następnie lista jest mapowana i zwracana jako List<VisitDto>
+    //Case 3: W przypadku gdy wywołany przez metodę findById z patientRepository zwraca Optional<Patient>, metoda
+    // findByPatientId z visitRepository przekazuje pustą listę wizyt dla przekazanego pacjenta jeśli ten nie posiada
+    // przypisanych wizyt.
     public List<VisitDto> getVisitsByPatientId(Long patientId) {
         Optional<Patient> patientOptional = patientRepository.findById(patientId);
         if (patientOptional.isEmpty()) {
@@ -31,6 +39,18 @@ public class VisitService {
         return visitMapper.ListDto(visits);
     }
 
+//    Case 1: W przypadku wywołania metody findById z visitRepository zostanie zwrócony pusty Optional to metoda rzuca wyjątkiem,
+//    ze wizyta o podanym Id nie istnieje.
+//            Case 2:  W przypadku wywołania metody findById z visitRepository zostanie zwrócony Optional<Visit> metoda
+//            getPatient zwróci pacjenta to rzucany jest wyjątek, wyzita jest już zajęta.
+//
+//            Case 3:  W przypadku wywołania metody findById z visitRepository zostanie zwrócony Optional<Visit> metoda
+//            getPatient zwróci null,  metoda findById z patientRepository zwraca pustego Optional, rzucany jest wyjątek,
+//            że pacjent o podanym id nie istnieje.
+//
+//            Case 4:  W przypadku wywołania metody findById z visitRepository zostanie zwrócony Optional<Visit> metoda
+//            getPatient zwróci null,  metoda findById z patientRepository zwraca Optional<Patient> to pacjent jest
+//            przypisywany do wizyty. Następnie wizyta zostaje zapisana na podstawie metody save z visitRepository.
     @Transactional
     public Visit registerPatientForVisit(Long visitId, Long patientId) {
         Visit visit = visitRepository.findById(visitId)
@@ -45,6 +65,18 @@ public class VisitService {
         return visitRepository.save(visit);
     }
 
+    //createVisit
+    //
+    //Case 1: Po wywołaniu metody checkIsStartDateIsAvailable zwraca wartość true to rzuca wyjątek, że wizyta o takiej
+    // godzinie rozpoczęcia już istnieje.
+    //Case 2: Po wywołaniu metody checkIsStartDateIsAvailable zwraca wartość false, a data startu wizyty porównana
+    // do bieżącej daty wskazuje, że jest ona w przeszłości rzucany jest wyjątek, że data startu wizyty musi być w przyszłości.
+    //Case 3: Po wywołaniu metody checkIsStartDateIsAvailable zwraca wartość false,  data startu wizyty porównana
+    // do bieżącej daty wskazuje, że jest ona w przyszłości, a minuty rozpoczęcia wizyty nie są wielokrotnością 15
+    // to rzucany jest wyjątek, że minuty muszą być wielokrotnością 15.
+    //Case 4: Po wywołaniu metody checkIsStartDateIsAvailable zwraca wartość false,
+    // data startu wizyty porównana do bieżącej daty wskazuje, że jest ona w przyszłości, a minuty rozpoczęcia wizyty
+    // są wielokrotnością 15 to wizyta zostaje utworzona i przy pomocy metody save z visitRepository zostaje zapisana.
     @Transactional
     public Visit createVisit(VisitDto visitDto) {
         checkIsStartDateIsAvailable(visitDto.getStartDate());

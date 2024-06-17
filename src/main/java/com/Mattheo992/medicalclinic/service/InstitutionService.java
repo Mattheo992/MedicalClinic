@@ -19,6 +19,11 @@ public class InstitutionService {
     private final DoctorRepository doctorRepository;
     private final InstitutionMapper institutionMapper;
 
+    //Case 1: Metoda checkIfEmailIsAvailable sprawdzając czy nazwa instytucji jest dostępna zwraca true, metoda rzuca
+    // wyjątek, że instytucja o podanej nazwie istnieje.
+    //Case 2: : Metoda checkIfEmailIsAvailable sprawdzając czy nazwa instytucji jest dostępna zwraca false,
+    //stworzony obiekt Institution poprzez institutionMapper mapowany jest na obiekt Dto a następnie przez metodę
+    // save z institutionRepository jest zapisywany.
     @Transactional
     public InstitutionDto addInstitution(InstitutionDto institutionDto) {
         Institution institution = institutionMapper.toEntity(institutionDto);
@@ -26,11 +31,21 @@ public class InstitutionService {
         return institutionMapper.toDto(institutionRepository.save(institution));
     }
 
+    //Case 1: Wywołanie metody findAll z institutionRepository zwraca pustą listę List<InstitutionDto>.
+    //Case 2: Wywołanie metod findAll z institutionRepository tworzy  List<Institution> o parametrach przekazanych
+    // w Pageable. Metoda przy użyciu institutionMapper zwraca List<InstitutionDto>.
     public List<InstitutionDto> getInstitutions(Pageable pageable) {
         List<Institution> institutions = institutionRepository.findAll(pageable).getContent();
         return institutionMapper.toListDtos(institutions);
     }
 
+
+    //Case 1: Metoda findById z institutionsRepository zwraca pustego Optional, rzuca wyjątkiem, ze instytucja o podanym
+    // id nie istnieje.
+    //Case 2: Metoda findById z institutionsRepository zwraca  Optional<Institution>, metoda findById z doctorRepository
+    // zwraca pustego Optional i rzuca wyjątkiem, że doktor o podanym id nie istnieje.
+    //Case 3: Metoda findById z institutionsRepository zwraca  Optional<Institution>, metoda findById z doctorRepository
+    // zwraca Optional<Doctor>, doktor zostaje dodany do listy doktorów w podanej instytucji, metoda save z institutionRepository zapisuje instytucję.
     @Transactional
     public void addDoctorToInstitution(Long institutionId, Long doctorId) {
         Institution institution = institutionRepository.findById(institutionId)
