@@ -30,7 +30,7 @@ public class InstitutionServiceTest {
     InstitutionMapper institutionMapper;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         this.institutionRepository = Mockito.mock(InstitutionRepository.class);
         this.doctorRepository = Mockito.mock(DoctorRepository.class);
         this.institutionMapper = Mappers.getMapper(InstitutionMapper.class);
@@ -38,38 +38,42 @@ public class InstitutionServiceTest {
     }
 
     @Test
-    void getInstitutions_InstitutionsExists_ReturnInstitutions(){
+    void getInstitutions_InstitutionsExists_ReturnInstitutions() {
+        //given
         List<Institution> institutions = new ArrayList<>();
         institutions.add(createInstitution(1L, "Barlik"));
         institutions.add(createInstitution(2L, "CKD"));
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
         when(institutionRepository.findAll()).thenReturn(institutions);
+        //when
         List<InstitutionDto> result = institutionService.getInstitutions(pageable);
+        //then
         Assertions.assertEquals(2, result.size());
         Assertions.assertEquals("Barlik", result.get(0).getInstitutionName());
         Assertions.assertEquals("CKD", result.get(1).getInstitutionName());
     }
 
     @Test
-    void addInstitution_InstitutionNameAvailable_InstitutionCreated(){
-    Institution institution = createInstitution(1L, "Barlicki");
-    InstitutionDto institutionDto = institutionMapper.toDto(institution);
-    when(institutionMapper.toEntity(institutionDto)).thenReturn(institution);
-    doNothing().when(institutionRepository.existsByInstitutionName(institution.getInstitutionName()));
-    when(institutionRepository.save(institution));
-    InstitutionDto result = institutionService.addInstitution(institutionDto);
-    Assertions.assertNotNull(result);
-    Assertions.assertEquals("Barlicki", result.getInstitutionName());
+    void addInstitution_InstitutionNameAvailable_InstitutionCreated() {
+        //given
+        Institution institution = createInstitution(1L, "Barlicki");
+        InstitutionDto institutionDto = institutionMapper.toDto(institution);
+        when(institutionMapper.toEntity(institutionDto)).thenReturn(institution);
+        doNothing().when(institutionRepository.existsByInstitutionName(institution.getInstitutionName()));
+        when(institutionRepository.save(institution));
+        //when
+        InstitutionDto result = institutionService.addInstitution(institutionDto);
+        //then
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("Barlicki", result.getInstitutionName());
     }
 
-     Institution createInstitution(Long id, String institutionName){
+    Institution createInstitution(Long id, String institutionName) {
         Doctor doctor = new Doctor();
         doctor.setId(id);
         doctor.setEmail("lekarz@lekarz.pl");
         Set<Doctor> doctors = new HashSet<>();
         doctors.add(doctor);
-        return new Institution(id, institutionName, "Lodz", "91-013", "Narutowicza", 21L,doctors);
-
+        return new Institution(id, institutionName, "Lodz", "91-013", "Narutowicza", 21L, doctors);
     }
-
 }

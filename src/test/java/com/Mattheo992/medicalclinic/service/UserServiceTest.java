@@ -27,14 +27,15 @@ public class UserServiceTest {
     UserMapper userMapper;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         this.userRepository = Mockito.mock(UserRepository.class);
         this.userMapper = Mappers.getMapper(UserMapper.class);
         this.userService = new UserService(userRepository, userMapper);
     }
 
     @Test
-    void getUsers_UsersExists_UsersReturned(){
+    void getUsers_UsersExists_UsersReturned() {
+        //given
         List<User> users = new ArrayList<>();
         users.add(createUser("lubiePlacki", 1L));
         users.add(createUser("nalesniki", 2L));
@@ -51,34 +52,43 @@ public class UserServiceTest {
     }
 
     @Test
-    void getUser_UserExist_UserReturned(){
+    void getUser_UserExist_UserReturned() {
+        //given
         User user = createUser("mateusz", 1L);
         Long id = 1L;
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
-       User result = userService.getUser(id);
-       Assertions.assertNotNull(result);
-       Assertions.assertEquals(1L, result.getId());
-       Assertions.assertEquals("mateusz", result.getUsername());
-    }
-
-    @Test
-    void addUser_UserAvailable_UserSaved(){
-        User user = createUser("mateusz", 1L);
-        when(userRepository.save(user)).thenReturn(user);
-        User result = userService.addUser(user);
+        //when
+        User result = userService.getUser(id);
+        //then
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1L, result.getId());
         Assertions.assertEquals("mateusz", result.getUsername());
     }
 
     @Test
-    void updatePassword_UserExist_PasswordUpdated(){
+    void addUser_UserAvailable_UserSaved() {
+        //given
+        User user = createUser("mateusz", 1L);
+        when(userRepository.save(user)).thenReturn(user);
+        //when
+        User result = userService.addUser(user);
+        //then
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1L, result.getId());
+        Assertions.assertEquals("mateusz", result.getUsername());
+    }
+
+    @Test
+    void updatePassword_UserExist_PasswordUpdated() {
+        //given
         User user = createUser("mateusz", 1L);
         String password = "nowehaslo";
         Long id = 1L;
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
         when(userRepository.save(user));
+       //when
         String result = userService.updatePassword(id, password);
+      //then
         Assertions.assertNotNull(result);
         Assertions.assertEquals("nowehaslo", result);
         Assertions.assertEquals(password, result);
@@ -86,11 +96,10 @@ public class UserServiceTest {
 
     }
 
-    User createUser(String username, Long id){
+    User createUser(String username, Long id) {
         Patient patient = new Patient();
         patient.setId(id);
         patient.setFirstName("kamil");
-        return new User(id, username, "haslo",patient);
+        return new User(id, username, "haslo", patient);
     }
-
 }

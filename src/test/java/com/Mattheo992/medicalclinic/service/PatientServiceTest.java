@@ -20,9 +20,11 @@ import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +41,7 @@ public class PatientServiceTest {
         this.userRepository = Mockito.mock(UserRepository.class);
         this.patientDtoMapper = Mappers.getMapper(PatientDtoMapper.class);
         this.userMapper = Mappers.getMapper(UserMapper.class);
-        this.patientService = new PatientService(patientRepository, userRepository,patientDtoMapper,userMapper);
+        this.patientService = new PatientService(patientRepository, userRepository, patientDtoMapper, userMapper);
     }
 
     @Test
@@ -49,8 +51,8 @@ public class PatientServiceTest {
         patients.add(createPatient("aa@wp.pl", 1L));
         patients.add(createPatient("bb@wp.pl", 2L));
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
-        //when
         when(patientRepository.findAll()).thenReturn(patients);
+        //when
         List<PatientDto> result = patientService.getPatients(pageable);
         //then
         Assertions.assertEquals(2, result.size());
@@ -61,19 +63,44 @@ public class PatientServiceTest {
     }
 
     @Test
+    void getPatients_PatientsNotExist_EmptyListReturned() {
+        //given
+        List<Patient> patients = new ArrayList<>();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
+        when(patientRepository.findAll()).thenReturn(Collections.emptyList());
+        //when
+        List<PatientDto> result = patientService.getPatients(pageable);
+        //then
+        Assertions.assertEquals(0, result.size());
+    }
+
+    @Test
     void GetPatient_PatientExist_PatientReturned() {
         //given
         Patient patient1 = createPatient("cc@onet.pl", 3L);
         PatientDto patientDto = patientDtoMapper.dto(patient1);
         String email = "cc@onet.pl";
-        //when
         when(patientRepository.findByEmail(email)).thenReturn(Optional.of(patient1));
         when(patientDtoMapper.dto(patient1)).thenReturn(patientDto);
+        //when
         PatientDto result = patientService.getPatient(email);
-//then
+        //then
         Assertions.assertNotNull(result);
         Assertions.assertEquals("cc@onet.pl", result.getEmail());
         Assertions.assertEquals(3L, result.getId());
+    }
+
+    @Test
+    void GetPatient_PatientNotExist_ExceptionReturned() {
+        //given
+        Patient patient1 = createPatient("cc@onet.pl", 3L);
+        PatientDto patientDto = patientDtoMapper.dto(patient1);
+        String email = "bb@onet.pl";
+        when(patientRepository.findByEmail(email)).thenReturn(Optional.empty());
+        //when
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> patientService.getPatient(email));
+        //then
+        Assertions.assertEquals("Patient with given email does not exist.", result.getMessage());
     }
 
     @Test
@@ -81,27 +108,50 @@ public class PatientServiceTest {
         Patient patient = createPatient("a@a.pl", 1L);
         Patient savedPatient = createPatient("a@a.pl", 1L);
         PatientDto patientDto = patientDtoMapper.dto(savedPatient);
-//when
-doNothing().when(patientRepository.existsByEmail(patient.getEmail()));
-when(patientRepository.save(patient)).thenReturn(savedPatient);
-when(patientDtoMapper.dto(savedPatient)).thenReturn(patientDto);
-PatientDto result = patientService.addPatient(patient);
-//then
+        doNothing().when(patientRepository.existsByEmail(patient.getEmail()));
+        when(patientRepository.save(patient)).thenReturn(savedPatient);
+        when(patientDtoMapper.dto(savedPatient)).thenReturn(patientDto);
+        //when
+        PatientDto result = patientService.addPatient(patient);
+        //then
         Assertions.assertNotNull(result);
         Assertions.assertEquals("a@a.pl", result.getEmail());
         Assertions.assertEquals(1L, result.getId());
     }
 
     @Test
-    void addPatientWithUser_EmailIsAvailable_PatientWithUserCreated(){
-User user = new User(1L, "mateusz", "1234",null);
-Patient patient = createPatient("a@a.pl", 1L);
-PatientDto patientDto = patientDtoMapper.dto(patient);
-
+    void addPatient_EmailIsNotAvailable_PatientNotCreated() {
+        Patient patient = createPatient("a@a.pl", 1L);
+        when(patientRepository.existsByEmail(patient.getEmail())).thenReturn(true);
+        //when
+        IllegalArgumentException result = Assertions.assertThrows(IllegalArgumentException.class, () -> patientService.addPatient(patient));
+        //then
+        Assertions.assertEquals("Patient with given email already exists.", result.getMessage());
     }
 
     @Test
-    void editPatient_Patient_PatientEdited(){
+    void addPatientWithUser_EmailIsAvailable_PatientWithUserCreated() {
+        //given
+        User user = new User(1L, "mateusz", "1234", null);
+        Patient patient = createPatient("a@a.pl", 1L);
+        PatientDto patientDto = patientDtoMapper.dto(patient);
+        when(userRepository.save(user)).thenReturn(user);
+        when(patientRepository.save(patient)).thenReturn(patient);
+        when(patientDtoMapper.dto(patient)).thenReturn(patientDto);
+        //when
+        PatientDto result = patientService.addPatientWithUser(patientDto);
+        //then
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1L, result.getUser().getId());
+        Assertions.assertEquals("mateusz", result.getUser().getUsername());
+        Assertions.assertEquals("1234", result.getUser().getPassword());
+        Assertions.assertEquals("a@a.pl", result.getEmail());
+        Assertions.assertEquals("1L", result.getId());
+    }
+
+    @Test
+    void editPatient_Patient_PatientEdited() {
+        //given
         Patient patient = createPatient("a@a.pl", 1L);
         Patient editedPatient = createPatient("b@b.pl", 1L);
         Patient savedPatient = createPatient("b@b.pl", 1L);
@@ -110,9 +160,9 @@ PatientDto patientDto = patientDtoMapper.dto(patient);
         when(patientRepository.findByEmail(email)).thenReturn(Optional.of(patient));
         when(patientRepository.save(patient)).thenReturn(savedPatient);
         when(patientDtoMapper.dto(savedPatient)).thenReturn(patientDto);
-
-        PatientDto result = patientService.editPatient(email,editedPatient);
-
+        //when
+        PatientDto result = patientService.editPatient(email, editedPatient);
+        //then
         Assertions.assertNotNull(result);
         Assertions.assertEquals("b@b.pl", result.getEmail());
     }
