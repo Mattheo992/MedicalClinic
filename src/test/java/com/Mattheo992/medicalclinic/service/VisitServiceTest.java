@@ -60,6 +60,17 @@ public class VisitServiceTest {
     }
 
     @Test
+    void getVisitsByPatientId_PatientNotExists_ReturnedException() {
+        //given
+        Long patientId = 1L;
+        when(patientRepository.findById(patientId)).thenReturn(Optional.empty());
+        //when
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () -> visitService.getVisitsByPatientId(patientId));
+        //then
+        Assertions.assertEquals("Patient not foud", exception.getMessage());
+    }
+
+    @Test
     void registerPatientForVisit_VisitExist_PatientRegisteredForVisit() {
         //given
         Long patientId = 1L;
@@ -81,6 +92,18 @@ public class VisitServiceTest {
     }
 
     @Test
+    void registerPatientForVisit_VisitNotExists_ReturnedException() {
+        //given
+        Long visitId = 1L;
+        Long patientId = 1L;
+        when(visitRepository.findById(visitId)).thenReturn(Optional.empty());
+        //when
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () -> visitService.registerPatientForVisit(visitId, patientId));
+        //then
+        Assertions.assertEquals("isit with given id does not exist.", exception.getMessage());
+    }
+
+    @Test
     void createVisit_DateIsAvailable_VisitCreated() {
         //given
         Visit visit = createVisit(1L, LocalDateTime.of(2024, 06, 17, 9, 00, 00), LocalDateTime.of(2024, 06, 17, 9, 15, 00));
@@ -93,6 +116,19 @@ public class VisitServiceTest {
         Assertions.assertEquals(1l, result.getId());
         Assertions.assertEquals(LocalDateTime.of(2024, 06, 17, 9, 00, 00), result.getStartDate());
         Assertions.assertEquals(LocalDateTime.of(2024, 06, 17, 9, 15, 00), result.getEndDate());
+    }
+
+    @Test
+    void createVisit_DateIsNotAvailable_VisitedNotCreated() {
+        //given
+        LocalDateTime startDate = LocalDateTime.of(2024, 06, 17, 9, 00, 00);
+        Visit visit = createVisit(1L, startDate, LocalDateTime.of(2024, 06, 17, 9, 15, 00));
+        VisitDto visitDto = visitMapper.visitDto(visit);
+        when(visitRepository.existsByStartDate(startDate)).thenReturn(true);
+        //when
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(visitDto));
+        //then
+        Assertions.assertEquals("Visit with given date is already exist", exception.getMessage());
     }
 
     Visit createVisit(Long id, LocalDateTime startTime, LocalDateTime endTime) {

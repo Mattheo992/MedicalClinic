@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,6 +53,17 @@ public class UserServiceTest {
     }
 
     @Test
+    void getUsers_UsersNotExist_ReturnEmpty() {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+        //when
+        List<UserDto> result = userService.getUsers(pageable);
+        //then
+        Assertions.assertTrue(result.isEmpty(), "Expected the result list to be empty");
+    }
+
+    @Test
     void getUser_UserExist_UserReturned() {
         //given
         User user = createUser("mateusz", 1L);
@@ -63,6 +75,17 @@ public class UserServiceTest {
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1L, result.getId());
         Assertions.assertEquals("mateusz", result.getUsername());
+    }
+
+    @Test
+    void getUser_UserNotExist_UserNotReturned() {
+        //given
+        Long id = 1L;
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        //then
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () -> userService.getUser(id));
+        //then
+        Assertions.assertEquals("User with given id does not exist", exception.getMessage());
     }
 
     @Test
@@ -79,6 +102,18 @@ public class UserServiceTest {
     }
 
     @Test
+    void addUser_UsernameIsNotAvailable_UserNotAdded() {
+        //given
+        String username = "asdasd";
+        User user = createUser(username, 1L);
+        when(userRepository.existsByUsername(username)).thenReturn(true);
+        //when
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> userService.addUser(user));
+    //then
+        Assertions.assertEquals("User with given username is already exist", exception.getMessage());
+    }
+
+    @Test
     void updatePassword_UserExist_PasswordUpdated() {
         //given
         User user = createUser("mateusz", 1L);
@@ -86,15 +121,27 @@ public class UserServiceTest {
         Long id = 1L;
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
         when(userRepository.save(user));
-       //when
+        //when
         String result = userService.updatePassword(id, password);
-      //then
+        //then
         Assertions.assertNotNull(result);
         Assertions.assertEquals("nowehaslo", result);
         Assertions.assertEquals(password, result);
         Assertions.assertEquals(user.getPassword(), result);
-
     }
+
+    @Test
+    void updatePassword_UserNotExist_PasswordNotUpdated(){
+        //given
+        Long id = 1L;
+        String newPassword = "asdasd";
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        //when
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> userService.updatePassword(id, newPassword));
+        //then
+        Assertions.assertEquals("User not found", exception.getMessage());
+    }
+
 
     User createUser(String username, Long id) {
         Patient patient = new Patient();

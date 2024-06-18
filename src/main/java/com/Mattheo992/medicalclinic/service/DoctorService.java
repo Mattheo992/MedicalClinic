@@ -25,6 +25,7 @@ public class DoctorService {
     // np. IllegalArgumentException.
     @Transactional
     public Doctor addDoctor(Doctor doctor) {
+checkIsEmailAvailable(doctor.getEmail());
         return doctorRepository.save(doctor);
     }
 
@@ -47,5 +48,11 @@ public class DoctorService {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
         return doctor.getInstitutions();
+    }
+
+    private void checkIsEmailAvailable(String email) {
+        if (doctorRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Doctor with given email is already exist");
+        }
     }
 }

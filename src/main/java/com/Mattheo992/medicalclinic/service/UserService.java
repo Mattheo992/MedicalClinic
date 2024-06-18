@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class UserService {
     //Case 2: Przekazano nieprawidłowe wartości w polach dla obiektu User, metoda rzuca wyjątek np. IllegalArgumentException.
     @Transactional
     public User addUser(User user) {
+        checkIsUsernameAvailable(user.getUsername());
         return userRepository.save(user);
     }
 
@@ -51,5 +53,11 @@ public class UserService {
         user.setPassword(newPassword);
         userRepository.save(user);
         return newPassword;
+    }
+
+    private void checkIsUsernameAvailable(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("User with given username is already exist");
+        }
     }
 }

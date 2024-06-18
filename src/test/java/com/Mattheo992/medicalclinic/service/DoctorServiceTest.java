@@ -45,6 +45,18 @@ public class DoctorServiceTest {
     }
 
     @Test
+    void addDoctor_EmailIsAvailable_DoctorNotAdded(){
+        //given
+        String email = "asdasd";
+        Doctor doctor = createDoctor(1L, "123");
+        when(doctorRepository.existsByEmail(email)).thenReturn(true);
+        //when
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> doctorService.addDoctor(doctor));
+        //then
+        Assertions.assertEquals("Doctor with given email is already exist", exception.getMessage());
+    }
+
+    @Test
     void getDoctors_DoctorsExists_ReturnedDoctors() {
         //given
         List<Doctor> doctors = new ArrayList<>();
@@ -58,6 +70,17 @@ public class DoctorServiceTest {
         Assertions.assertEquals(2, result.size());
         Assertions.assertEquals("1@wp.pl", result.get(0).getEmail());
         Assertions.assertEquals("2@wp.pl", result.get(1).getEmail());
+    }
+
+    @Test
+    void getDoctors_DoctorsNotExists_ReturnedEmpty(){
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("email").ascending());
+        when(doctorRepository.findAll()).thenReturn(Collections.emptyList());
+        //when
+        List<DoctorDto> result = doctorService.getDoctors(pageable);
+        //then
+        Assertions.assertTrue(result.isEmpty(), "Expected the result list to be empty");
     }
 
     @Test
@@ -80,8 +103,10 @@ public class DoctorServiceTest {
         Long id = 2L;
         Doctor doctor = createDoctor(1L, "mm@wp.pl");
         when(doctorRepository.findById(id)).thenReturn(Optional.empty());
-        //when, then
-        Assertions.assertThrows(IllegalArgumentException.class, () -> doctorService.getInstitutionsForDoctor(id));
+        //when
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> doctorService.getInstitutionsForDoctor(id));
+        //then
+        Assertions.assertEquals("Doctor not found", exception.getMessage());
     }
 
     Doctor createDoctor(Long id, String email) {
