@@ -117,17 +117,17 @@ public class UserServiceTest {
     void updatePassword_UserExist_PasswordUpdated() {
         //given
         User user = createUser("mateusz", 1L);
-        String password = "nowehaslo";
+       User updatedUser = createUser("mateusz", 1L);
+       String newPassword = "132";
+       updatedUser.setPassword(newPassword);
         Long id = 1L;
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
         when(userRepository.save(user));
         //when
-        String result = userService.updatePassword(id, password);
+        UserDto result = userService.updatePassword(id, updatedUser);
         //then
         Assertions.assertNotNull(result);
         Assertions.assertEquals("nowehaslo", result);
-        Assertions.assertEquals(password, result);
-        Assertions.assertEquals(user.getPassword(), result);
     }
 
     @Test
@@ -135,9 +135,11 @@ public class UserServiceTest {
         //given
         Long id = 1L;
         String newPassword = "asdasd";
+        User updatedUser = createUser("mateusz", 1L);
+        updatedUser.setPassword(newPassword);
         when(userRepository.findById(id)).thenReturn(Optional.empty());
         //when
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> userService.updatePassword(id, newPassword));
+        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> userService.updatePassword(id, updatedUser ));
         //then
         Assertions.assertEquals("User not found", exception.getMessage());
     }

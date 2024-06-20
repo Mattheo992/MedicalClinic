@@ -47,12 +47,11 @@ public class UserService {
     //Case 2:  Metoda findById wywołana z userRepository zwraca Optional<User>,  hasło dla podanego usera zostaje zmienione,
     // metoda save z userRepository zapisuje usera i zwracane jest nowe hasło.
     @Transactional
-    public String updatePassword(Long id, String newPassword) {
+    public UserDto updatePassword(Long id, User updatedUser) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        user.setPassword(newPassword);
-        userRepository.save(user);
-        return newPassword;
+        user.setPassword(updatedUser.getPassword());
+        return userMapper.userToUserDto(userRepository.save(user));
     }
 
     private void checkIsUsernameAvailable(String username) {

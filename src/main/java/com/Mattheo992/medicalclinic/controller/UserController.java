@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/password")
-    public String updatePassword(@PathVariable Long id, @RequestBody String newPassword) {
-        return userService.updatePassword(id, newPassword);
+    public UserDto updatePassword(@PathVariable Long id, @RequestBody User updatedUser) {
+        return userService.updatePassword(id, updatedUser);
     }
 }
