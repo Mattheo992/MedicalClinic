@@ -38,7 +38,6 @@ public class DoctorControllerTest {
     @MockBean
     DoctorService doctorService;
 
-
     @Test
     void addDoctor_DataCorrect_DoctorSaved() throws Exception {
         Doctor doctor = new Doctor();
@@ -60,7 +59,7 @@ public class DoctorControllerTest {
     }
 
     @Test
-    void getDoctors_DoctorsExists_ReturnDoctorDtoList() throws Exception{
+    void getDoctors_DoctorsExists_ReturnDoctorDtoList() throws Exception {
         DoctorDto doctor1 = new DoctorDto("Adam", "Dobry", "Cardiology", "adam.dobry@wp.com");
         DoctorDto doctor2 = new DoctorDto("Ewa", "Kowalska", "Neurology", "ewa.kowalska@onet.com");
         List<DoctorDto> doctors = new ArrayList<>();
@@ -70,7 +69,7 @@ public class DoctorControllerTest {
         when(doctorService.getDoctors(pageable)).thenReturn(doctors);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(doctors))
+                        .content(objectMapper.writeValueAsString(doctors))
                 ).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Adam"))
@@ -103,7 +102,7 @@ public class DoctorControllerTest {
 
         when(doctorService.getInstitutionsForDoctor(1L)).thenReturn(institutions);
         mockMvc.perform(MockMvcRequestBuilders.get("/doctors/1/institutions")
-                .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(institutions))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(institutions))
                 ).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))

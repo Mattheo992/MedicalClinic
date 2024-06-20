@@ -50,11 +50,6 @@
 			<artifactId>h2</artifactId>
 			<version>2.2.220</version>
 		</dependency>
-		<dependency>
-			<groupId>com.Mattheo992</groupId>
-			<artifactId>medicalclinic</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 
 	<build>
