@@ -156,10 +156,10 @@ when(userService.addUser(user)).thenThrow(new IllegalArgumentException("User wit
         user.setId(id);
         when(userService.updatePassword(id, user)).thenThrow(new IllegalArgumentException("User not found"));
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/users/{id}/password", id)
+        mockMvc.perform(MockMvcRequestBuilders.patch("/users/{id}/password", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isMethodNotAllowed())
+                .andExpect(status().isNotFound())
                 .andExpect(content().string("User not found"));
     }
 }
