@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -58,17 +59,42 @@ public class UserControllerTest {
     }
 
     @Test
+    void getUsers_UsersNotExists_ReturnedEmptyList() throws Exception {
+        List<UserDto> users = Collections.emptyList();
+        Pageable pageable = PageRequest.of(0, 10);
+        when(userService.getUsers(pageable)).thenReturn(users);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/users").contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(users)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].length").value(0));
+    }
+
+    @Test
     void getUser_UserExists_ReturnedUser() throws Exception {
         User user = new User();
         user.setId(1L);
         user.setUsername("mat");
         when(userService.getUser(1L)).thenReturn(user);
+
         mockMvc.perform(MockMvcRequestBuilders.get("/users").contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(user)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.username").value("mat"));
+    }
+
+    @Test
+    void getUser_UserNotExists_UserNotReturned() throws Exception {
+        Long userId = 1L;
+        when(userService.getUser(userId)).thenThrow(new IllegalArgumentException("User with given id does not exist"));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/users").contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("User with given id does not exist."));
     }
 
     @Test
@@ -84,6 +110,19 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.username").value("mat"));
+    }
+
+    @Test
+    void addUser_UsernameNotAvailable_UserNotSaved() throws Exception {
+        User user = new User();
+        user.setUsername("mat");
+when(userService.addUser(user)).thenThrow(new IllegalArgumentException("User with given username is already exist"));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("User with given username is already exist."));
     }
 
     @Test
@@ -108,5 +147,19 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.password").value("nowehaslo"))
                 .andExpect(content().json(objectMapper.writeValueAsString(userDto)));
+    }
+
+    @Test
+    void updatePassword_UserNotExists_PasswordNotUpdated() throws Exception{
+        Long id = 1L;
+        User user = new User();
+        user.setId(id);
+        when(userService.updatePassword(id, user)).thenThrow(new IllegalArgumentException("User not found"));
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/users/{id}/password", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(content().string("User not found"));
     }
 }
