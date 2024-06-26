@@ -20,14 +20,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
@@ -46,8 +44,8 @@ public class VisitControllerTest {
     MockMvc mockMvc;
 
     @Test
-    void createVisit_DataCorrect_VisitSaved() throws Exception{
-       Visit visit = new Visit();
+    void createVisit_DataCorrect_VisitSaved() throws Exception {
+        Visit visit = new Visit();
         LocalDateTime starDate = LocalDateTime.now().plusHours(1);
         LocalDateTime endDate = starDate.plusMinutes(15);
         visit.setStartDate(starDate);
@@ -56,13 +54,29 @@ public class VisitControllerTest {
         when(visitService.createVisit(visitMapper.visitDto(visit))).thenReturn(visit);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/visits")
-                .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(visit)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(visit)))
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
 
     @Test
-    void registerPatient_VisitAndPatientExists_PatientRegistered() throws Exception{
+    void createVisit_StartTimeIsInThePast_VisitNotSaved() throws Exception {
+        Visit visit = new Visit();
+        LocalDateTime starDate = LocalDateTime.now().minusHours(1);
+        LocalDateTime endDate = starDate.plusMinutes(15);
+        visit.setStartDate(starDate);
+        visit.setEndDate(endDate);
+
+        when(visitService.createVisit(visitMapper.visitDto(visit))).thenThrow(new IllegalArgumentException("Start date must be in the future."));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/visits")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(visit)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void registerPatient_VisitAndPatientExists_PatientRegistered() throws Exception {
         Long visitId = 1L;
         Long patientId = 1L;
 
@@ -79,13 +93,27 @@ public class VisitControllerTest {
         when(visitService.registerPatientForVisit(visitId, patientId)).thenReturn(visit);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/visits/{visitId}/patients/{patientId}", visitId, patientId).contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(visit)))
+                        .content(objectMapper.writeValueAsString(visit)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
-    void GetVisitsForPatient_VisitsAndPatientExists_VisitsListReturned() throws Exception{
+    void registerPatient_PatientNotExists_ReturnedException() throws Exception {
+        Long visitId = 1L;
+        Long patientId = 1L;
+
+        when(visitService.registerPatientForVisit(visitId, patientId)).thenThrow(new IllegalArgumentException("Patient with given id does not exist."));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/visits/{visitId}/patients/{patientId}", visitId, patientId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Patient with given id does not exist."));
+    }
+
+    @Test
+    void GetVisitsForPatient_VisitsAndPatientExists_VisitsListReturned() throws Exception {
         Long visitId = 1L;
         Long patientId = 1L;
         LocalDateTime starDate = LocalDateTime.now().plusHours(1);
@@ -110,11 +138,22 @@ public class VisitControllerTest {
         when(visitService.getVisitsByPatientId(patientId)).thenReturn(visitDtos);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/visits/patient/{patientId}", patientId).contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(visitDtos)))
+                        .content(objectMapper.writeValueAsString(visitDtos)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
 
+    @Test
+    void getVisitsForPatient_PatientNotExists_ReturnedException() throws Exception {
+        Long patientId = 1L;
 
+        when(visitService.getVisitsByPatientId(patientId)).thenThrow(new IllegalArgumentException("Patient not found"));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/visits/patient/{patientId}", patientId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Patient with given id does not exist."));
+    }
 }

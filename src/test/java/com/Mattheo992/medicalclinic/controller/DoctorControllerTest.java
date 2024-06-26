@@ -22,8 +22,7 @@ import java.util.*;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,7 +44,6 @@ public class DoctorControllerTest {
         doctor.setName("Adam");
         doctor.setSurname("Dobry");
         doctor.setEmail("11@22.pl");
-
         when(doctorService.addDoctor(doctor)).thenReturn(doctor);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -59,6 +57,21 @@ public class DoctorControllerTest {
     }
 
     @Test
+    void addDoctor_EmailIsNotAvailable_DoctorNotSaved() throws Exception{
+        Doctor doctor = new Doctor();
+        doctor.setEmail("test");
+
+        when(doctorService.addDoctor(doctor)).thenThrow(new IllegalArgumentException("Doctor with given email is already exist"));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(doctor)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(content().string("Doctor with given email is already exist"));
+    }
+
+    @Test
     void getDoctors_DoctorsExists_ReturnDoctorDtoList() throws Exception {
         DoctorDto doctor1 = new DoctorDto("Adam", "Dobry", "Cardiology", "adam.dobry@wp.com");
         DoctorDto doctor2 = new DoctorDto("Ewa", "Kowalska", "Neurology", "ewa.kowalska@onet.com");
@@ -66,6 +79,7 @@ public class DoctorControllerTest {
         doctors.add(doctor1);
         doctors.add(doctor2);
         Pageable pageable = PageRequest.of(0, 10);
+
         when(doctorService.getDoctors(pageable)).thenReturn(doctors);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -80,6 +94,20 @@ public class DoctorControllerTest {
                 .andExpect(jsonPath("$[1].surname").value("Kowalska"))
                 .andExpect(jsonPath("$[1].specialization").value("Neurology"))
                 .andExpect(jsonPath("$[1].email").value("ewa.kowalska@onet.com"));
+    }
+
+    @Test
+    void getDoctors_DoctorsNotExists_ReturnEmptyList() throws Exception{
+        List<DoctorDto> doctors = Collections.emptyList();
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(doctorService.getDoctors(pageable)).thenReturn(doctors);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(doctors))
+                ).andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
@@ -101,6 +129,7 @@ public class DoctorControllerTest {
         doctor.setInstitutions(institutions);
 
         when(doctorService.getInstitutionsForDoctor(1L)).thenReturn(institutions);
+
         mockMvc.perform(MockMvcRequestBuilders.get("/doctors/1/institutions")
                         .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(institutions))
                 ).andDo(print())
@@ -109,5 +138,18 @@ public class DoctorControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Barlik"))
                 .andExpect(jsonPath("$[1].id").value(2L))
                 .andExpect(jsonPath("$[1].name").value("CKD"));
+    }
+
+    @Test
+    void getInstitutionsForDoctor_DoctorNotExists_ThrowsException() throws Exception{
+        Long doctorId = 1L;
+
+        when(doctorService.getInstitutionsForDoctor(doctorId)).thenThrow(new IllegalArgumentException("Doctor not found"));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/doctors/1/institutions")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Doctor not found"));
     }
 }

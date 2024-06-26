@@ -45,7 +45,9 @@ public class UserControllerTest {
         List<UserDto> users = new ArrayList<>();
         users.add(userDto);
         users.add(userDto1);
+
         when(userService.getUsers(pageable)).thenReturn(users);
+
         mockMvc.perform(MockMvcRequestBuilders.get("/users").contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(users)))
                 .andDo(print())
@@ -62,6 +64,7 @@ public class UserControllerTest {
     void getUsers_UsersNotExists_ReturnedEmptyList() throws Exception {
         List<UserDto> users = Collections.emptyList();
         Pageable pageable = PageRequest.of(0, 10);
+
         when(userService.getUsers(pageable)).thenReturn(users);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/users").contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -76,6 +79,7 @@ public class UserControllerTest {
         User user = new User();
         user.setId(1L);
         user.setUsername("mat");
+
         when(userService.getUser(1L)).thenReturn(user);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/users").contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -89,6 +93,7 @@ public class UserControllerTest {
     @Test
     void getUser_UserNotExists_UserNotReturned() throws Exception {
         Long userId = 1L;
+
         when(userService.getUser(userId)).thenThrow(new IllegalArgumentException("User with given id does not exist"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/users").contentType(MediaType.APPLICATION_JSON))
@@ -102,6 +107,7 @@ public class UserControllerTest {
         User user = new User();
         user.setId(1L);
         user.setUsername("mat");
+
         when(userService.addUser(user)).thenReturn(user);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/users").contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -116,7 +122,8 @@ public class UserControllerTest {
     void addUser_UsernameNotAvailable_UserNotSaved() throws Exception {
         User user = new User();
         user.setUsername("mat");
-when(userService.addUser(user)).thenThrow(new IllegalArgumentException("User with given username is already exist"));
+
+        when(userService.addUser(user)).thenThrow(new IllegalArgumentException("User with given username is already exist"));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -150,10 +157,11 @@ when(userService.addUser(user)).thenThrow(new IllegalArgumentException("User wit
     }
 
     @Test
-    void updatePassword_UserNotExists_PasswordNotUpdated() throws Exception{
+    void updatePassword_UserNotExists_PasswordNotUpdated() throws Exception {
         Long id = 1L;
         User user = new User();
         user.setId(id);
+
         when(userService.updatePassword(id, user)).thenThrow(new IllegalArgumentException("User not found"));
 
         mockMvc.perform(MockMvcRequestBuilders.patch("/users/{id}/password", id)

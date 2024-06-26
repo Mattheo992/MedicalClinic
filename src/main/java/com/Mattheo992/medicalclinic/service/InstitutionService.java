@@ -39,7 +39,6 @@ public class InstitutionService {
         return institutionMapper.toListDtos(institutions);
     }
 
-
     //Case 1: Metoda findById z institutionsRepository zwraca pustego Optional, rzuca wyjątkiem, ze instytucja o podanym
     // id nie istnieje.
     //Case 2: Metoda findById z institutionsRepository zwraca  Optional<Institution>, metoda findById z doctorRepository

@@ -39,7 +39,7 @@ public class VisitService {
         return visitMapper.ListDto(visits);
     }
 
-//    Case 1: W przypadku wywołania metody findById z visitRepository zostanie zwrócony pusty Optional to metoda rzuca wyjątkiem,
+    //    Case 1: W przypadku wywołania metody findById z visitRepository zostanie zwrócony pusty Optional to metoda rzuca wyjątkiem,
 //    ze wizyta o podanym Id nie istnieje.
 //            Case 2:  W przypadku wywołania metody findById z visitRepository zostanie zwrócony Optional<Visit> metoda
 //            getPatient zwróci pacjenta to rzucany jest wyjątek, wyzita jest już zajęta.
