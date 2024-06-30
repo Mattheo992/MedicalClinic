@@ -1,0 +1,123 @@
+databaseChangeLog:
+ - changeSet:
+    id: 1
+    author: Mateusz
+    changes:
+      - createTable:
+          tableName: PATIENT
+          columns:
+            - column:
+                autoIncrement: true
+                constraints:
+                  nullable: false
+                  primaryKey: true
+                  primaryKeyName: pk_patient_id
+                name: id
+                type: Long
+            - column:
+                name: email
+                type: VARCHAR(255)
+            - column:
+                name: id_card_no
+                type: VARCHAR(255)
+            - column:
+                name: first_name
+                type: VARCHAR(255)
+            - column:
+                name: last_name
+                type: VARCHAR(255)
+            - column:
+                name: phone_number
+                type: VARCHAR(255)
+            - column:
+                name: birthday
+                type: DATE
+            - column:
+                name: userId
+                type: BIGINT
+                constraints:
+                  foreignKeyName: fk_patient_user
+                  references: app_user(id)
+                  onDelete: CASCADE
+                  onUpdate: CASCADE
+
+ - changeSet:
+     id: 1
+     author: Mateusz
+     changes:
+       - createTable:
+           tableName: USER
+           columns:
+             - column:
+               autoIncrement: true
+               constraints:
+                 nullable: false
+                 primaryKey: true
+                 primaryKeyName: pk_user_id
+             - column:
+                 name: username
+                 type: VARCHAR(255)
+             - column:
+                 name: password
+                 type: VARCHAR(255)
+
+ - changeSet:
+   id: 3
+   author: Mateusz
+   changes:
+     - createTable:
+         tableName: VISIT
+         columns:
+           - column:
+               autoIncrement: true
+               constraints:
+                 nullable: false
+                 primaryKey: true
+                 primaryKeyName: pk_visit_id
+               name: id
+               type: Long
+           - column:
+               name: start_date
+               type: TIMESTAMP
+           - column:
+               name: end_date
+               type: TIMESTAMP
+           - column:
+               name: patient_id
+               type: BIGINT
+               constraints:
+                 foreignKeyName: fk_visit_patient
+                 references: PATIENT(id)
+                 onDelete: CASCADE
+                 onUpdate: CASCADE
+
+ - changeSet:
+     id: 4
+     author: Mateusz
+     changes:
+       - createTable:
+           tableName: DOCTOR
+           columns:
+             - column:
+                 autoIncrement: true
+                 constraints:
+                   nullable: false
+                   primaryKey: true
+                   primaryKeyName: pk_doctor_id
+                 name: id
+                 type: Long
+             - column:
+                 name: name
+                 type: VARCHAR(255)
+             - column:
+                 name: surname
+                 type: VARCHAR(255)
+             - column:
+                 name: specialization
+                 type: VARCHAR(255)
+             - column:
+                 name: email
+                 type: VARCHAR(255)
+             - column:
+                 name: password
+                 type: VARCHAR(255)
