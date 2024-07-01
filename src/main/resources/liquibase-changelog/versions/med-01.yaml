@@ -13,7 +13,7 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: pk_patient_id
                   name: id
-                  type: Long
+                  type: BIGINT
               - column:
                   name: email
                   type: VARCHAR(255)
@@ -50,7 +50,7 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: pk_user_id
                   name: id
-                  type: Long
+                  type: BIGINT
               - column:
                   name: username
                   type: VARCHAR(255)
@@ -96,7 +96,7 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: pk_visit_id
                   name: id
-                  type: Long
+                  type: BIGINT
               - column:
                   name: start_date
                   type: TIMESTAMP
