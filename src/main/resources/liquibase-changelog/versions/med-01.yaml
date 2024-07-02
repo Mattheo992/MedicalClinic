@@ -60,11 +60,6 @@ databaseChangeLog:
               - column:
                   name: password
                   type: VARCHAR(255)
-
-  - changeSet:
-      id: 3
-      author: Mattheo992
-      changes:
         - addColumn:
             tableName: PATIENT
             columns:
@@ -83,7 +78,7 @@ databaseChangeLog:
             onUpdate: CASCADE
 
   - changeSet:
-      id: 4
+      id: 3
       author: Mattheo992
       changes:
         - createTable:
