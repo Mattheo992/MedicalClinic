@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public class Institution {
     private Long numberOfStreet;
 
     @ManyToMany(mappedBy = "institutions")
-    private Set<Doctor> doctors;
+    private List<Doctor> doctors;
 
     @Override
     public boolean equals(Object o) {

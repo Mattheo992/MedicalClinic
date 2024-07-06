@@ -11,15 +11,16 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.control.MappingControl;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class UserServiceTest {
@@ -41,12 +42,13 @@ public class UserServiceTest {
         users.add(createUser("lubiePlacki", 1L));
         users.add(createUser("nalesniki", 2L));
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
+        Page<User> userPage = new PageImpl<>(users, pageable, users.size());
         //when
-        when(userRepository.findAll()).thenReturn(users);
+        when(userRepository.findAll(pageable)).thenReturn(userPage);
         List<UserDto> result = userService.getUsers(pageable);
         //then
         Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals("lubiePacki", result.get(0).getUsername());
+        Assertions.assertEquals("lubiePlacki", result.get(0).getUsername());
         Assertions.assertEquals("nalesniki", result.get(1).getUsername());
         Assertions.assertEquals(1L, result.get(0).getId());
         Assertions.assertEquals(2L, result.get(1).getId());
@@ -56,7 +58,8 @@ public class UserServiceTest {
     void getUsers_UsersNotExist_ReturnEmpty() {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
-        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+        Page<User> userPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        when(userRepository.findAll(pageable)).thenReturn(userPage);
         //when
         List<UserDto> result = userService.getUsers(pageable);
         //then
@@ -72,7 +75,7 @@ public class UserServiceTest {
         //when
         User result = userService.getUser(id);
         //then
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
         Assertions.assertEquals(1L, result.getId());
         Assertions.assertEquals("mateusz", result.getUsername());
     }
@@ -96,7 +99,7 @@ public class UserServiceTest {
         //when
         User result = userService.addUser(user);
         //then
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
         Assertions.assertEquals(1L, result.getId());
         Assertions.assertEquals("mateusz", result.getUsername());
     }
@@ -115,19 +118,23 @@ public class UserServiceTest {
 
     @Test
     void updatePassword_UserExist_PasswordUpdated() {
-        //given
-        User user = createUser("mateusz", 1L);
-       User updatedUser = createUser("mateusz", 1L);
-       String newPassword = "132";
-       updatedUser.setPassword(newPassword);
-        Long id = 1L;
-        when(userRepository.findById(id)).thenReturn(Optional.of(user));
-        when(userRepository.save(user));
-        //when
-        UserDto result = userService.updatePassword(id, updatedUser);
-        //then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals("nowehaslo", result);
+        // given
+        Long userId = 1L;
+        String newPassword = "newPassword";
+        User existingUser = new User();
+        existingUser.setId(userId);
+        existingUser.setPassword("123");
+        User updatedUser = new User();
+        updatedUser.setId(userId);
+        updatedUser.setPassword(newPassword);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(updatedUser));
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+        // when
+        UserDto result = userService.updatePassword(userId, updatedUser);
+        // then
+        assertNotNull(result);
+        assertEquals(newPassword, result.getPassword());
+        Mockito.verify(userRepository, Mockito.times(1)).save(updatedUser);
     }
 
     @Test
@@ -143,7 +150,6 @@ public class UserServiceTest {
         //then
         Assertions.assertEquals("User not found", exception.getMessage());
     }
-
 
     User createUser(String username, Long id) {
         Patient patient = new Patient();

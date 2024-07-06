@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -15,7 +16,7 @@ public class InstitutionDto {
     private String zipCode;
     private String streetName;
     private Long numberOfStreet;
-    private Set<SimpleDoctorDto> doctors;
+    private List<SimpleDoctorDto> doctors;
 
     @Override
     public String toString() {

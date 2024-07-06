@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.controller;
-
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
@@ -18,9 +19,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.print.Doc;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,50 +64,45 @@ public class InstitutionControllerTest {
         InstitutionDto institutionDto = new InstitutionDto();
         institutionDto.setInstitutionName("Test");
 
-        when(institutionService.addInstitution(institutionDto)).thenThrow(new IllegalArgumentException("Institution with given name already exists!"));
+        when(institutionService.addInstitution(institutionDto)).thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Institution with given name already exists!"));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/institutions")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(institutionDto)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Institution with given name already exists!"));
+                .andExpect(content().string("Institution with given name already exists!"));
     }
 
     @Test
     void getInstitutions_InstitutionsExists_ReturnedInstitutionsList() throws Exception {
-        InstitutionDto institutionDto1 = new InstitutionDto();
-        institutionDto1.setInstitutionName("Barlik");
-        InstitutionDto institutionDto2 = new InstitutionDto();
-        institutionDto2.setInstitutionName("CKD");
-        List<InstitutionDto> institutionsDtos = new ArrayList<>();
-        institutionsDtos.add(institutionDto1);
-        institutionsDtos.add(institutionDto2);
+         InstitutionDto institutionDto1 = new InstitutionDto("Barlik", "CityA", "12345", "StreetA", 1L, null);
+         InstitutionDto institutionDto2 = new InstitutionDto("CKD", "CityB", "67890", "StreetB", 2L, null);
+                List<InstitutionDto> institutionDtos = new ArrayList<>();
+                institutionDtos.add(institutionDto1);
+                institutionDtos.add(institutionDto2);
+
         Pageable pageable = PageRequest.of(0, 10);
+        when(institutionService.getInstitutions(pageable)).thenReturn(institutionDtos);
 
-        when(institutionService.getInstitutions(pageable)).thenReturn(institutionsDtos);
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/institutions")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(institutionsDtos))
-                ).andDo(print())
+        mockMvc.perform(get("/institutions").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Barlik"))
-                .andExpect(jsonPath("$[1].name").value("CKD"));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].institutionName").value("Barlik"))
+                .andExpect(jsonPath("$[1].institutionName").value("CKD"));
     }
+
 
     @Test
     void getInstitutions_InstitutionNotExists_ReturnedEmptyList() throws Exception {
-        List<InstitutionDto> institutions = Collections.emptyList();
+        List<InstitutionDto> institutionDtos = new ArrayList<>();
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(institutionService.getInstitutions(pageable)).thenReturn(institutions);
+        when(institutionService.getInstitutions(pageable)).thenReturn(institutionDtos);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/institutions")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(institutions))
-                ).andDo(print())
+        mockMvc.perform(get("/institutions").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length").value(0));
+                .andExpect(jsonPath("$").isEmpty());
     }
 
     @Test
@@ -133,12 +131,11 @@ public class InstitutionControllerTest {
         Long institutionId = 1L;
         Long doctorId = 100L;
 
-        doThrow(new IllegalArgumentException("Doctor not found")).when(institutionService).addDoctorToInstitution(institutionId, doctorId);
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found")).when(institutionService).addDoctorToInstitution(institutionId, doctorId);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/institutions/{institutionId}/doctors/{doctorId}", institutionId, doctorId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
-                .andExpect(jsonPath("$.message").value("Doctor not found"));
+                .andExpect(content().string("Doctor not found"));
 
         verify(institutionService, times(1)).addDoctorToInstitution(institutionId, doctorId);
     }

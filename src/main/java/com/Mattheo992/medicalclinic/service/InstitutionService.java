@@ -35,7 +35,8 @@ public class InstitutionService {
     //Case 2: Wywołanie metod findAll z institutionRepository tworzy  List<Institution> o parametrach przekazanych
     // w Pageable. Metoda przy użyciu institutionMapper zwraca List<InstitutionDto>.
     public List<InstitutionDto> getInstitutions(Pageable pageable) {
-        List<Institution> institutions = institutionRepository.findAll(pageable).getContent();
+        List<Institution> institutions = institutionRepository.findAll(pageable).stream()
+                .toList();
         return institutionMapper.toListDtos(institutions);
     }
 

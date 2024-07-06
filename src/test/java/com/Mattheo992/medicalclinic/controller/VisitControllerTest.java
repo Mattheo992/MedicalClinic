@@ -12,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -67,12 +69,13 @@ public class VisitControllerTest {
         visit.setStartDate(starDate);
         visit.setEndDate(endDate);
 
-        when(visitService.createVisit(visitMapper.visitDto(visit))).thenThrow(new IllegalArgumentException("Start date must be in the future."));
+        when(visitService.createVisit(visitMapper.visitDto(visit))).thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be in the future."));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/visits")
                         .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(visit)))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Start date must be in the future."));
     }
 
     @Test
@@ -103,12 +106,12 @@ public class VisitControllerTest {
         Long visitId = 1L;
         Long patientId = 1L;
 
-        when(visitService.registerPatientForVisit(visitId, patientId)).thenThrow(new IllegalArgumentException("Patient with given id does not exist."));
+        when(visitService.registerPatientForVisit(visitId, patientId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient with given id does not exist."));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/visits/{visitId}/patients/{patientId}", visitId, patientId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().string("Patient with given id does not exist."));
     }
 
@@ -148,12 +151,12 @@ public class VisitControllerTest {
     void getVisitsForPatient_PatientNotExists_ReturnedException() throws Exception {
         Long patientId = 1L;
 
-        when(visitService.getVisitsByPatientId(patientId)).thenThrow(new IllegalArgumentException("Patient not found"));
+        when(visitService.getVisitsByPatientId(patientId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient with given id does not exist."));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/visits/patient/{patientId}", patientId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().string("Patient with given id does not exist."));
     }
 }

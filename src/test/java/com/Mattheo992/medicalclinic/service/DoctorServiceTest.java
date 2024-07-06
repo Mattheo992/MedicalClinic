@@ -4,6 +4,7 @@ import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
 import com.Mattheo992.medicalclinic.model.mappers.DoctorMapper;
+import com.Mattheo992.medicalclinic.model.mappers.DoctorMapperImpl;
 import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,10 +13,16 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+
 import org.springframework.data.domain.Sort;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class DoctorServiceTest {
@@ -25,7 +32,7 @@ public class DoctorServiceTest {
 
     @BeforeEach
     void setup() {
-        this.doctorRepository = Mockito.mock(DoctorRepository.class);
+        this.doctorRepository = mock(DoctorRepository.class);
         this.doctorMapper = Mappers.getMapper(DoctorMapper.class);
         this.doctorService = new DoctorService(doctorRepository, doctorMapper);
     }
@@ -39,62 +46,71 @@ public class DoctorServiceTest {
         Doctor result = doctorService.addDoctor(doctor);
 //then
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(1L, result.getId());
-        Assertions.assertEquals("2@wp.pl", result.getEmail());
-        Assertions.assertEquals(doctor, result);
+        assertEquals(1L, result.getId());
+        assertEquals("2@wp.pl", result.getEmail());
+        assertEquals(doctor, result);
     }
 
     @Test
-    void addDoctor_EmailIsAvailable_DoctorNotAdded(){
+    void addDoctor_EmailIsAvailable_DoctorNotAdded() {
         //given
         String email = "asdasd";
-        Doctor doctor = createDoctor(1L, "123");
+        Doctor doctor = createDoctor(1L, email);
         when(doctorRepository.existsByEmail(email)).thenReturn(true);
         //when
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> doctorService.addDoctor(doctor));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> doctorService.addDoctor(doctor));
         //then
-        Assertions.assertEquals("Doctor with given email is already exist", exception.getMessage());
+        assertEquals("Doctor with given email is already exist", exception.getMessage());
     }
 
     @Test
     void getDoctors_DoctorsExists_ReturnedDoctors() {
-        //given
+        // given
         List<Doctor> doctors = new ArrayList<>();
-        doctors.add(createDoctor(1l, "1@wp.pl"));
+        doctors.add(createDoctor(1L, "1@wp.pl"));
         doctors.add(createDoctor(2L, "2@wp.pl"));
         Pageable pageable = PageRequest.of(0, 10, Sort.by("email").ascending());
-        when(doctorRepository.findAll()).thenReturn(doctors);
-        //when
+        Page<Doctor> doctorPage = new PageImpl<>(doctors, pageable, doctors.size());
+        when(doctorRepository.findAll(pageable)).thenReturn(doctorPage);
+
+        // when
         List<DoctorDto> result = doctorService.getDoctors(pageable);
-        //then
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals("1@wp.pl", result.get(0).getEmail());
-        Assertions.assertEquals("2@wp.pl", result.get(1).getEmail());
+
+        // then
+        assertEquals(2, result.size());
+        assertEquals("1@wp.pl", result.get(0).getEmail());
+        assertEquals("2@wp.pl", result.get(1).getEmail());
     }
 
     @Test
-    void getDoctors_DoctorsNotExists_ReturnedEmpty(){
-        //given
+    void getDoctors_DoctorsNotExists_ReturnedEmpty() {
+        // given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("email").ascending());
-        when(doctorRepository.findAll()).thenReturn(Collections.emptyList());
-        //when
+        Page<Doctor> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        DoctorRepository doctorRepository = mock(DoctorRepository.class);
+        when(doctorRepository.findAll(pageable)).thenReturn(emptyPage);
+        DoctorMapper doctorMapper = new DoctorMapperImpl();
+        DoctorService doctorService = new DoctorService(doctorRepository, doctorMapper);
+        // when
         List<DoctorDto> result = doctorService.getDoctors(pageable);
-        //then
+        // then
         Assertions.assertTrue(result.isEmpty(), "Expected the result list to be empty");
     }
-
     @Test
     void getInstitutionsForDoctor_InstitutionAndDoctorExists_ReturnedInstitutionsForDoctor() {
-        //given
+        // given
         Long id = 1L;
-        Doctor doctor = createDoctor(1L, "mm@wp.pl");
+        Doctor doctor = createDoctor(id, "mm@wp.pl");
+        Institution institution = createInstitution(1L, "Hospital A");
+        doctor.setInstitutions(Collections.singletonList(institution)); // ustawienie instytucji dla lekarza
         when(doctorRepository.findById(id)).thenReturn(Optional.of(doctor));
-        //when
-        Set<Institution> result = doctorService.getInstitutionsForDoctor(id);
-        //then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(1, result.size());
-        result.forEach(institution -> Assertions.assertEquals(1L, institution.getId()));
+
+        // when
+        List<Institution> result = doctorService.getInstitutionsForDoctor(id);
+
+        // then
+        assertEquals(1, result.size());
+        assertEquals(1L, result.get(0).getId());
     }
 
     @Test
@@ -104,19 +120,23 @@ public class DoctorServiceTest {
         Doctor doctor = createDoctor(1L, "mm@wp.pl");
         when(doctorRepository.findById(id)).thenReturn(Optional.empty());
         //when
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> doctorService.getInstitutionsForDoctor(id));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> doctorService.getInstitutionsForDoctor(id));
         //then
-        Assertions.assertEquals("Doctor not found", exception.getMessage());
+        assertEquals("Doctor not found", exception.getMessage());
     }
 
-    Doctor createDoctor(Long id, String email) {
-        //given
+    private Doctor createDoctor(Long id, String email) {
+        Doctor doctor = new Doctor();
+        doctor.setId(id);
+        doctor.setEmail(email);
+
+        return doctor;
+    }
+
+    private Institution createInstitution(Long id, String name) {
         Institution institution = new Institution();
         institution.setId(id);
-        institution.setInstitutionName("Barlicki");
-        //when
-        Set<Institution> institutions = new HashSet<>();
-        //then
-        return new Doctor(id, "Mateusz", "Bar", "Anestezjolog", email, "haslo", institutions);
+        institution.setInstitutionName(name);
+        return institution;
     }
 }

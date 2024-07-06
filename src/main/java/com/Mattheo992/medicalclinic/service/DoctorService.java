@@ -44,7 +44,7 @@ checkIsEmailAvailable(doctor.getEmail());
     // nie jest przypisany do żadnej instytucji, zwracany jest pusty Set.
     //Case 3: metoda findById z doctorRepository zwraca Optional<Doctor>, metoda getInstitutions() pobiera przypisane
     // instytucje do doktora, zwracany jest Set z przypisanymi instytucjami do doktora.
-    public Set<Institution> getInstitutionsForDoctor(Long doctorId) {
+    public List<Institution> getInstitutionsForDoctor(Long doctorId) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
         return doctor.getInstitutions();

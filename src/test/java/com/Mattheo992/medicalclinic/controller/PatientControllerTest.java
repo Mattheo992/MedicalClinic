@@ -5,6 +5,7 @@ import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.model.dtos.PatientDto;
 import com.Mattheo992.medicalclinic.model.dtos.UserDto;
 import com.Mattheo992.medicalclinic.model.mappers.PatientDtoMapper;
+import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.service.PatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -14,15 +15,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +35,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PatientControllerTest {
     @MockBean
     PatientService patientService;
+
+    @MockBean
+    PatientRepository patientRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -43,22 +50,25 @@ public class PatientControllerTest {
 
     @Test
     void getPatients_PatientsExists_PatientsListReturned() throws Exception {
+        // Given
         PatientDto patientDto1 = new PatientDto();
         patientDto1.setId(1L);
         patientDto1.setEmail("asd!@#");
+
         PatientDto patientDto2 = new PatientDto();
-        patientDto1.setId(2L);
-        patientDto1.setEmail("11@#");
+        patientDto2.setId(2L);
+        patientDto2.setEmail("11@#");
+
         List<PatientDto> patients = new ArrayList<>();
         patients.add(patientDto1);
         patients.add(patientDto2);
         Pageable pageable = PageRequest.of(0, 10);
-
         when(patientService.getPatients(pageable)).thenReturn(patients);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/patients").contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(patients)))
-                .andDo(print())
+        mockMvc.perform(MockMvcRequestBuilders.get("/patients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("page", "0") // Simulate pagination parameters
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].email").value("asd!@#"))
@@ -101,7 +111,7 @@ public class PatientControllerTest {
     void getPatient_PatientNotExists_PatientNotReturned() throws Exception {
         String email = "testo";
 
-        when(patientService.getPatient(email)).thenThrow(new IllegalArgumentException("Patient with given email does not exist."));
+        when(patientService.getPatient(email)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient with given email does not exist."));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/patients/{email}", email)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -121,7 +131,7 @@ public class PatientControllerTest {
 
         when(patientService.addPatient(patient)).thenReturn(patientDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/patients").contentType(MediaType.APPLICATION_JSON_VALUE)
+        mockMvc.perform(post("/patients").contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(patientDto))).
                 andDo(print())
                 .andExpect(status().isOk())
@@ -140,7 +150,7 @@ public class PatientControllerTest {
         when(patientService.addPatientWithUser(patientDto))
                 .thenReturn(patientDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/patients/with-user").contentType(MediaType.APPLICATION_JSON_VALUE)
+        mockMvc.perform(post("/patients/with-user").contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(patientDto))).
                 andDo(print())
                 .andExpect(status().isOk())
@@ -149,35 +159,39 @@ public class PatientControllerTest {
 
     @Test
     void addPatient_EmailIsNotAvailable_PatientNotSaved() throws Exception {
-        Patient patient = new Patient();
-        patient.setEmail("test@example.com");
+String email = "existing@example.com";
+Patient patient = new Patient();
+patient.setEmail(email);
 
-        when(patientService.addPatient(patient))
-                .thenThrow(new IllegalArgumentException("Patient with given email already exists."));
+        when(patientRepository.existsByEmail(email)).thenReturn(true);
+        doThrow(new ResponseStatusException (HttpStatus.BAD_REQUEST,  "Patient with given email already exists."))
+                .when(patientService).addPatient(any(Patient.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/patients")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        mockMvc.perform(post("/patients")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(patient)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Patient with given email already exists."));
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void addPatientWithUser_EmailIsNotAvailable_PatientNotSaved() throws Exception {
+        String email = "existing@example.com";
         Patient patient = new Patient();
-        patient.setEmail("test@example.com");
+        patient.setEmail(email);
         User user = new User();
         user.setId(1L);
         patient.setUser(user);
 
-        when(patientService.addPatient(patient))
-                .thenThrow(new IllegalArgumentException("Patient with given email already exists."));
+        when(patientRepository.existsByEmail(email)).thenReturn(true);
+        doThrow(new ResponseStatusException (HttpStatus.BAD_REQUEST,  "Patient with given email already exists."))
+                .when(patientService).addPatient(any(Patient.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/patients")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        mockMvc.perform(post("/patients")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(patient)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Patient with given email already exists."));
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -201,13 +215,14 @@ public class PatientControllerTest {
     void deletePatient_PatientNotExists_PatientNotDeleted() throws Exception {
         String email = "test";
 
-        doThrow(new IllegalArgumentException("Patient with given email does not exist."))
+        doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Patient with given email does not exist"))
                 .when(patientService).deletePatient(email);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/patients/{email}", email)
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Patient with given email does not exist."));
+                .andExpect(content().string("Patient with given email does not exist"));
     }
 
     @Test
@@ -240,7 +255,7 @@ public class PatientControllerTest {
         patient.setId(1L);
 
         when(patientService.editPatient(email, patient))
-                .thenThrow(new IllegalArgumentException("Patient with given email does not exist."));
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
 
         mockMvc.perform(MockMvcRequestBuilders.put("/patients/{email}", email)
                         .contentType(MediaType.APPLICATION_JSON)

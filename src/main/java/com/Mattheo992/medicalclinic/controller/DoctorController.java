@@ -54,7 +54,7 @@ public class DoctorController {
             @ApiResponse(responseCode = "404", description = "Doctor not found", content = @Content)
     })
     @GetMapping("/{doctorId}/institutions")
-    public Set<Institution> getInstitutionsForDoctor(@PathVariable Long doctorId) {
+    public List<Institution> getInstitutionsForDoctor(@PathVariable Long doctorId) {
         return doctorService.getInstitutionsForDoctor(doctorId);
     }
 }

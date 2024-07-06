@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -31,7 +32,7 @@ public class Doctor {
             joinColumns = @JoinColumn(name = "doctor_id"),
             inverseJoinColumns = @JoinColumn(name = "institution_id")
     )
-    private Set<Institution> institutions;
+    private List<Institution> institutions;
 
     @Override
     public boolean equals(Object o) {

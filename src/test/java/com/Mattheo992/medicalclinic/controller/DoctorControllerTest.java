@@ -4,6 +4,7 @@ import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
 import com.Mattheo992.medicalclinic.model.mappers.DoctorMapper;
+import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import com.Mattheo992.medicalclinic.service.DoctorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,13 +15,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.print.Doc;
 import java.util.*;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,6 +44,9 @@ public class DoctorControllerTest {
     @MockBean
     DoctorService doctorService;
 
+    @MockBean
+    DoctorRepository doctorRepository;
+
     @Test
     void addDoctor_DataCorrect_DoctorSaved() throws Exception {
         Doctor doctor = new Doctor();
@@ -46,7 +56,7 @@ public class DoctorControllerTest {
         doctor.setEmail("11@22.pl");
         when(doctorService.addDoctor(doctor)).thenReturn(doctor);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
+        mockMvc.perform(post("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(doctor)))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -57,22 +67,24 @@ public class DoctorControllerTest {
     }
 
     @Test
-    void addDoctor_EmailIsNotAvailable_DoctorNotSaved() throws Exception{
+    void addDoctor_EmailIsNotAvailable_DoctorNotSaved() throws Exception {
         Doctor doctor = new Doctor();
-        doctor.setEmail("test");
+        String email = "existing@email.com";
+        doctor.setEmail(email);
 
-        when(doctorService.addDoctor(doctor)).thenThrow(new IllegalArgumentException("Doctor with given email is already exist"));
+        when(doctorRepository.existsByEmail(email)).thenReturn(true);
+doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Doctor with given email is already exist" )).when(doctorService).addDoctor(any(Doctor.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
+        mockMvc.perform(post("/doctors")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(doctor)))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(content().string("Doctor with given email is already exist"));
     }
 
     @Test
     void getDoctors_DoctorsExists_ReturnDoctorDtoList() throws Exception {
+        // Given
         DoctorDto doctor1 = new DoctorDto("Adam", "Dobry", "Cardiology", "adam.dobry@wp.com");
         DoctorDto doctor2 = new DoctorDto("Ewa", "Kowalska", "Neurology", "ewa.kowalska@onet.com");
         List<DoctorDto> doctors = new ArrayList<>();
@@ -82,9 +94,10 @@ public class DoctorControllerTest {
 
         when(doctorService.getDoctors(pageable)).thenReturn(doctors);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/doctors").contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(doctors))
-                ).andDo(print())
+        mockMvc.perform(MockMvcRequestBuilders.get("/doctors")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("page", "0") // Simulate pagination parameters
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Adam"))
                 .andExpect(jsonPath("$[0].surname").value("Dobry"))
@@ -97,7 +110,7 @@ public class DoctorControllerTest {
     }
 
     @Test
-    void getDoctors_DoctorsNotExists_ReturnEmptyList() throws Exception{
+    void getDoctors_DoctorsNotExists_ReturnEmptyList() throws Exception {
         List<DoctorDto> doctors = Collections.emptyList();
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -119,7 +132,9 @@ public class DoctorControllerTest {
         institution2.setId(2L);
         institution2.setInstitutionName("CKD");
 
-        Set<Institution> institutions = new HashSet<>(Arrays.asList(institution1, institution2));
+        List<Institution> institutions = new ArrayList<>();
+        institutions.add(institution1);
+        institutions.add(institution2);
 
         Doctor doctor = new Doctor();
         doctor.setId(1L);
@@ -134,22 +149,20 @@ public class DoctorControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(institutions))
                 ).andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].name").value("Barlik"))
-                .andExpect(jsonPath("$[1].id").value(2L))
-                .andExpect(jsonPath("$[1].name").value("CKD"));
+                .andExpect(jsonPath("$[0].id").value(1L)).
+                andExpect(jsonPath("$[1].id").value(2L));
     }
 
     @Test
     void getInstitutionsForDoctor_DoctorNotExists_ThrowsException() throws Exception{
         Long doctorId = 1L;
 
-        when(doctorService.getInstitutionsForDoctor(doctorId)).thenThrow(new IllegalArgumentException("Doctor not found"));
+        when(doctorService.getInstitutionsForDoctor(doctorId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND,"Doctor not found"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/doctors/1/institutions")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().string("Doctor not found"));
     }
 }

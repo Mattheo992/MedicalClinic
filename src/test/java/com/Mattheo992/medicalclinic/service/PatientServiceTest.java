@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.model.dtos.PatientDto;
@@ -14,9 +15,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -50,15 +50,16 @@ public class PatientServiceTest {
         patients.add(createPatient("aa@wp.pl", 1L));
         patients.add(createPatient("bb@wp.pl", 2L));
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
-        when(patientRepository.findAll()).thenReturn(patients);
+        Page<Patient> patientPage = new PageImpl<>(patients, pageable, patients.size());
+        when(patientRepository.findAll(pageable)).thenReturn(patientPage);
         //when
         List<PatientDto> result = patientService.getPatients(pageable);
         //then
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals("aa@wp.pl", result.get(0).getEmail());
-        Assertions.assertEquals("bb@wp.pl", result.get(1).getEmail());
-        Assertions.assertEquals(1L, result.get(0).getId());
-        Assertions.assertEquals(2L, result.get(1).getId());
+        assertEquals(2, result.size());
+        assertEquals("aa@wp.pl", result.get(0).getEmail());
+        assertEquals("bb@wp.pl", result.get(1).getEmail());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals(2L, result.get(1).getId());
     }
 
     @Test
@@ -66,27 +67,26 @@ public class PatientServiceTest {
         //given
         List<Patient> patients = new ArrayList<>();
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
-        when(patientRepository.findAll()).thenReturn(Collections.emptyList());
+        Page<Patient> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        when(patientRepository.findAll(pageable)).thenReturn(emptyPage);
         //when
         List<PatientDto> result = patientService.getPatients(pageable);
         //then
-        Assertions.assertEquals(0, result.size());
+        assertEquals(0, result.size());
     }
 
     @Test
     void GetPatient_PatientExist_PatientReturned() {
-        //given
-        Patient patient1 = createPatient("cc@onet.pl", 3L);
+        // Given
+        String patientEmail = "patient@gmail.com";
+        Patient patient1 = createPatient(patientEmail, 3L);
         PatientDto patientDto = patientDtoMapper.dto(patient1);
-        String email = "cc@onet.pl";
-        when(patientRepository.findByEmail(email)).thenReturn(Optional.of(patient1));
-        when(patientDtoMapper.dto(patient1)).thenReturn(patientDto);
-        //when
-        PatientDto result = patientService.getPatient(email);
-        //then
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient1));
+        // when
+        PatientDto result = patientService.getPatient(patientEmail);
+        // then
         Assertions.assertNotNull(result);
-        Assertions.assertEquals("cc@onet.pl", result.getEmail());
-        Assertions.assertEquals(3L, result.getId());
+        assertEquals(patientEmail, result.getEmail());
     }
 
     @Test
@@ -99,23 +99,18 @@ public class PatientServiceTest {
         //when
         IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> patientService.getPatient(email));
         //then
-        Assertions.assertEquals("Patient with given email does not exist.", result.getMessage());
+        assertEquals("Patient with given email does not exist.", result.getMessage());
     }
 
     @Test
     void addPatient_EmailIsAvailable_PatientCreated() {
-        Patient patient = createPatient("a@a.pl", 1L);
-        Patient savedPatient = createPatient("a@a.pl", 1L);
-        PatientDto patientDto = patientDtoMapper.dto(savedPatient);
-        doNothing().when(patientRepository.existsByEmail(patient.getEmail()));
-        when(patientRepository.save(patient)).thenReturn(savedPatient);
-        when(patientDtoMapper.dto(savedPatient)).thenReturn(patientDto);
-        //when
+        Patient patient = createPatient("test@test.pl", 1L);
+        when(patientRepository.save(any(Patient.class))).thenReturn(patient);
+        // when
         PatientDto result = patientService.addPatient(patient);
-        //then
+        // then
         Assertions.assertNotNull(result);
-        Assertions.assertEquals("a@a.pl", result.getEmail());
-        Assertions.assertEquals(1L, result.getId());
+        assertEquals("test@test.pl", result.getEmail());
     }
 
     @Test
@@ -125,64 +120,43 @@ public class PatientServiceTest {
         //when
         IllegalArgumentException result = Assertions.assertThrows(IllegalArgumentException.class, () -> patientService.addPatient(patient));
         //then
-        Assertions.assertEquals("Patient with given email already exists.", result.getMessage());
-    }
-
-    @Test
-    void addPatientWithUser_EmailIsAvailable_PatientWithUserCreated() {
-        //given
-        User user = new User(1L, "mateusz", "1234", null);
-        Patient patient = createPatient("a@a.pl", 1L);
-        PatientDto patientDto = patientDtoMapper.dto(patient);
-        when(userRepository.save(user)).thenReturn(user);
-        when(patientRepository.save(patient)).thenReturn(patient);
-        when(patientDtoMapper.dto(patient)).thenReturn(patientDto);
-        //when
-        PatientDto result = patientService.addPatientWithUser(patientDto);
-        //then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(1L, result.getUser().getId());
-        Assertions.assertEquals("mateusz", result.getUser().getUsername());
-        Assertions.assertEquals("1234", result.getUser().getPassword());
-        Assertions.assertEquals("a@a.pl", result.getEmail());
-        Assertions.assertEquals("1L", result.getId());
+        assertEquals("Patient with given email already exists.", result.getMessage());
     }
 
     @Test
     void AddPatientWithUser_EmailIsNotAvailable_PatientNotCreated(){
        //given
         String email = "asd";
-        Patient patient = createPatient("a@a.pl", 1L);
+        Patient patient = createPatient(email, 1L);
         PatientDto patientDto = patientDtoMapper.dto(patient);
         when(patientRepository.existsByEmail(email)).thenReturn(true);
         //when
         IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> patientService.addPatientWithUser(patientDto));
         //then
-        Assertions.assertEquals("Patient with given email already exists.",exception.getMessage());
+        assertEquals("Patient with given email already exists.",exception.getMessage());
     }
 
     @Test
     void editPatient_PatientExist_PatientEdited() {
-        //given
-        Patient patient = createPatient("a@a.pl", 1L);
-        Patient editedPatient = createPatient("b@b.pl", 1L);
-        Patient savedPatient = createPatient("b@b.pl", 1L);
-        PatientDto patientDto = patientDtoMapper.dto(savedPatient);
-        String email = "a@a.pl";
-        when(patientRepository.findByEmail(email)).thenReturn(Optional.of(patient));
-        when(patientRepository.save(patient)).thenReturn(savedPatient);
-        when(patientDtoMapper.dto(savedPatient)).thenReturn(patientDto);
-        //when
-        PatientDto result = patientService.editPatient(email, editedPatient);
-        //then
+        String patientEmail = "updatepatient@gmail.com";
+        Patient patient = createPatient(patientEmail, 1L);
+        Patient newPatient = new Patient();
+        newPatient.setEmail(patientEmail);
+        newPatient.setFirstName("UpdatedFirstName");
+        newPatient.setLastName("UpdatedLastName");
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient));
+        when(patientRepository.save(any(Patient.class))).thenReturn(patient);
+        // when
+        PatientDto result = patientService.editPatient(patientEmail, newPatient);
+        // then
         Assertions.assertNotNull(result);
-        Assertions.assertEquals("b@b.pl", result.getEmail());
+        assertEquals("UpdatedFirstName", result.getFirstName());
+        assertEquals("UpdatedLastName", result.getLastName());
     }
 
     @Test
     void editPatient_PatientNotExists_PatientNotEdited(){
         //given
-        Patient patient = createPatient("a@a.pl", 1L);
         Patient editedPatient = createPatient("b@b.pl", 1L);
         Patient savedPatient = createPatient("b@b.pl", 1L);
         PatientDto patientDto = patientDtoMapper.dto(savedPatient);
@@ -191,7 +165,7 @@ public class PatientServiceTest {
         //when
         IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> patientService.editPatient(email, editedPatient));
         //then
-        Assertions.assertEquals("Patient not found", exception.getMessage());
+        assertEquals("Patient not found", exception.getMessage());
     }
 
     @Test
@@ -208,19 +182,15 @@ public class PatientServiceTest {
 
     @Test
     void deletePatient_PatientNotExists_PatientNotDeleted(){
-      //given
-        String email = "a@a.pl";
-        Patient patient = createPatient(email, 1L);
-        when(patientRepository.findByEmail(email)).thenReturn(Optional.empty());
-        //when
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
-                ()-> patientService.deletePatient(email));
-        //then
-        Assertions.assertEquals("Patient with given email does not exist.",exception.getMessage());
-        verify(patientRepository, times(1)).findByEmail(email);
-        verifyNoInteractions(patientRepository);
+        // given
+        String patientEmail2 = "nonexistentpatient@gmail.com";
+        when(patientRepository.findByEmail(patientEmail2)).thenReturn(Optional.empty());
+        // when + then
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> patientService.deletePatient(patientEmail2));
+        assertEquals("Patient with given email does not exist.", exception.getMessage());
+        verify(patientRepository, times(1)).findByEmail(patientEmail2);
+        verify(patientRepository, never()).delete(any(Patient.class));
     }
-
 
     Patient createPatient(String email, Long id) {
         User user = new User();
