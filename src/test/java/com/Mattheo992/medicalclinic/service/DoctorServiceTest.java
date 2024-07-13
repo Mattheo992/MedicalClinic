@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.DoctorNotFound;
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
@@ -29,6 +30,7 @@ public class DoctorServiceTest {
     DoctorService doctorService;
     DoctorRepository doctorRepository;
     DoctorMapper doctorMapper;
+    DoctorNotFound doctorNotFound;
 
     @BeforeEach
     void setup() {
@@ -120,7 +122,7 @@ public class DoctorServiceTest {
         Doctor doctor = createDoctor(1L, "mm@wp.pl");
         when(doctorRepository.findById(id)).thenReturn(Optional.empty());
         //when
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> doctorService.getInstitutionsForDoctor(id));
+        DoctorNotFound exception = assertThrows(DoctorNotFound.class, () -> doctorService.getInstitutionsForDoctor(id));
         //then
         assertEquals("Doctor not found", exception.getMessage());
     }

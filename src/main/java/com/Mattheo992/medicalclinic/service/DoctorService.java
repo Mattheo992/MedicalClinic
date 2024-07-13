@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.DoctorNotFound;
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
 import com.Mattheo992.medicalclinic.model.mappers.DoctorMapper;
@@ -46,7 +47,7 @@ checkIsEmailAvailable(doctor.getEmail());
     // instytucje do doktora, zwracany jest Set z przypisanymi instytucjami do doktora.
     public List<Institution> getInstitutionsForDoctor(Long doctorId) {
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+                .orElseThrow(() -> new DoctorNotFound("Doctor not found"));
         return doctor.getInstitutions();
     }
 

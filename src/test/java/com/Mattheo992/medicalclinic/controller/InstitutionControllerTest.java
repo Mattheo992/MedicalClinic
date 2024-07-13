@@ -1,6 +1,8 @@
 package com.Mattheo992.medicalclinic.controller;
+
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
@@ -76,11 +78,11 @@ public class InstitutionControllerTest {
 
     @Test
     void getInstitutions_InstitutionsExists_ReturnedInstitutionsList() throws Exception {
-         InstitutionDto institutionDto1 = new InstitutionDto("Barlik", "CityA", "12345", "StreetA", 1L, null);
-         InstitutionDto institutionDto2 = new InstitutionDto("CKD", "CityB", "67890", "StreetB", 2L, null);
-                List<InstitutionDto> institutionDtos = new ArrayList<>();
-                institutionDtos.add(institutionDto1);
-                institutionDtos.add(institutionDto2);
+        InstitutionDto institutionDto1 = new InstitutionDto("Barlik", "CityA", "12345", "StreetA", 1L, null);
+        InstitutionDto institutionDto2 = new InstitutionDto("CKD", "CityB", "67890", "StreetB", 2L, null);
+        List<InstitutionDto> institutionDtos = new ArrayList<>();
+        institutionDtos.add(institutionDto1);
+        institutionDtos.add(institutionDto2);
 
         Pageable pageable = PageRequest.of(0, 10);
         when(institutionService.getInstitutions(pageable)).thenReturn(institutionDtos);

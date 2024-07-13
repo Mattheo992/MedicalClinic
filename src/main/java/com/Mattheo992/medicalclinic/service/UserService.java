@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.UserNotFound;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.model.dtos.UserDto;
 import com.Mattheo992.medicalclinic.model.mappers.UserMapper;
@@ -31,7 +32,7 @@ public class UserService {
     //Case 2: Wywołanie metody findById z userRepository zwraca obiekt User.
     public User getUser(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User with given id does not exist"));
+                .orElseThrow(() -> new UserNotFound("User with given id does not exist"));
     }
 
     //Case 1: Wartości przekazane do metody są poprawne, zostaje wywołana metoda save z userRepository, User zostaje zapisany.
@@ -49,7 +50,7 @@ public class UserService {
     @Transactional
     public UserDto updatePassword(Long id, User updatedUser) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFound("User not found"));
         user.setPassword(updatedUser.getPassword());
         return userMapper.userToUserDto(userRepository.save(user));
     }

@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.controller;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.PatientNotFound;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.model.dtos.PatientDto;
@@ -67,7 +68,7 @@ public class PatientControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/patients")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .param("page", "0") // Simulate pagination parameters
+                        .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
@@ -111,7 +112,7 @@ public class PatientControllerTest {
     void getPatient_PatientNotExists_PatientNotReturned() throws Exception {
         String email = "testo";
 
-        when(patientService.getPatient(email)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient with given email does not exist."));
+        when(patientService.getPatient(email)).thenThrow(new PatientNotFound("Patient with given email does not exist."));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/patients/{email}", email)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -215,14 +216,14 @@ patient.setEmail(email);
     void deletePatient_PatientNotExists_PatientNotDeleted() throws Exception {
         String email = "test";
 
-        doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Patient with given email does not exist"))
+        doThrow(new PatientNotFound("Patient with given email does not exist."))
                 .when(patientService).deletePatient(email);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/patients/{email}", email)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Patient with given email does not exist"));
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Patient with given email does not exist."));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.UserNotFound;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.model.dtos.UserDto;
@@ -27,6 +28,7 @@ public class UserServiceTest {
     UserService userService;
     UserRepository userRepository;
     UserMapper userMapper;
+    UserNotFound userNotFound;
 
     @BeforeEach
     void setup() {
@@ -86,7 +88,7 @@ public class UserServiceTest {
         Long id = 1L;
         when(userRepository.findById(id)).thenReturn(Optional.empty());
         //then
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () -> userService.getUser(id));
+        UserNotFound exception = Assertions.assertThrows(UserNotFound.class, () -> userService.getUser(id));
         //then
         Assertions.assertEquals("User with given id does not exist", exception.getMessage());
     }
@@ -146,7 +148,7 @@ public class UserServiceTest {
         updatedUser.setPassword(newPassword);
         when(userRepository.findById(id)).thenReturn(Optional.empty());
         //when
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> userService.updatePassword(id, updatedUser ));
+        UserNotFound exception = Assertions.assertThrows(UserNotFound.class, ()-> userService.updatePassword(id, updatedUser ));
         //then
         Assertions.assertEquals("User not found", exception.getMessage());
     }

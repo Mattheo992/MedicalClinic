@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.controller;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.DoctorNotFound;
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Institution;
 import com.Mattheo992.medicalclinic.model.dtos.DoctorDto;
@@ -42,6 +43,9 @@ public class DoctorControllerTest {
     ObjectMapper objectMapper;
 
     @MockBean
+    DoctorNotFound doctorNotFound;
+
+    @MockBean
     DoctorService doctorService;
 
     @MockBean
@@ -73,7 +77,7 @@ public class DoctorControllerTest {
         doctor.setEmail(email);
 
         when(doctorRepository.existsByEmail(email)).thenReturn(true);
-doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Doctor with given email is already exist" )).when(doctorService).addDoctor(any(Doctor.class));
+        doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Doctor with given email is already exist")).when(doctorService).addDoctor(any(Doctor.class));
 
         mockMvc.perform(post("/doctors")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -154,10 +158,10 @@ doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Doctor with given e
     }
 
     @Test
-    void getInstitutionsForDoctor_DoctorNotExists_ThrowsException() throws Exception{
+    void getInstitutionsForDoctor_DoctorNotExists_ThrowsException() throws Exception {
         Long doctorId = 1L;
 
-        when(doctorService.getInstitutionsForDoctor(doctorId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND,"Doctor not found"));
+        when(doctorService.getInstitutionsForDoctor(doctorId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/doctors/1/institutions")
                         .contentType(MediaType.APPLICATION_JSON))

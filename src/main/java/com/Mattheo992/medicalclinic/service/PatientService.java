@@ -1,14 +1,15 @@
 package com.Mattheo992.medicalclinic.service;
-
-import com.Mattheo992.medicalclinic.model.*;
+import com.Mattheo992.medicalclinic.exception.exceptions.PatientNotFound;
+import com.Mattheo992.medicalclinic.model.Patient;
+import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.model.dtos.PatientDto;
 import com.Mattheo992.medicalclinic.model.mappers.PatientDtoMapper;
 import com.Mattheo992.medicalclinic.model.mappers.UserMapper;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -33,11 +34,11 @@ public class PatientService {
     //wyjątek, że pacjent o podanym emailu nie istnieje.
     // Case 2: Jeśli metoda findByEmail wywołana z patientRepository zwróci zwróci pacjenta tj. Optional<Patient>
     // to patientDtoMapper zamienia Patient na PatientDto i zostaje zwrócony PatientDto.
-    public PatientDto getPatient(String email) {
-        return patientRepository.findByEmail(email)
-                .map(patientDtoMapper::dto)
-                .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));
-    }
+public PatientDto getPatient(String email) {
+    return patientRepository.findByEmail(email)
+            .map(patientDtoMapper::dto)
+            .orElseThrow(() -> new PatientNotFound("Patient with given email does not exist."));
+}
 //case1:W sytuacji gdy checkIfEmailIsAvailable zwróci true to powinien rzucić wyjątek, że taki pacjent istnieje.
     //case 2: checkIfEmailIsAvailable zwróci false to przechodzimy do wywołania patientRepository i zapisanie pacjenta,
     // a następnie zmapowania do patientDto i zapisanie go.
@@ -68,7 +69,7 @@ public class PatientService {
     @Transactional
     public void deletePatient(String email) {
         Patient patient = patientRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Patient with given email does not exist."));
+                .orElseThrow(() -> new PatientNotFound("Patient with given email does not exist."));
         User user = patient.getUser();
         if (user != null) {
             userRepository.delete(user);
@@ -84,7 +85,7 @@ public class PatientService {
     @Transactional
     public PatientDto editPatient(String email, Patient uptadetPatient) {
         Patient patient = patientRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new PatientNotFound("Patient with given email does not exist."));
         patient.setEmail(uptadetPatient.getEmail());
         patient.setFirstName(uptadetPatient.getFirstName());
         patient.setLastName(uptadetPatient.getLastName());

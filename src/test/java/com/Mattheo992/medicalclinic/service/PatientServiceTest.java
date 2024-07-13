@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.PatientNotFound;
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.User;
@@ -33,6 +34,7 @@ public class PatientServiceTest {
     UserRepository userRepository;
     PatientDtoMapper patientDtoMapper;
     UserMapper userMapper;
+    PatientNotFound patientNotFound;
 
     @BeforeEach
     void setup() {
@@ -97,7 +99,7 @@ public class PatientServiceTest {
         String email = "bb@onet.pl";
         when(patientRepository.findByEmail(email)).thenReturn(Optional.empty());
         //when
-        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> patientService.getPatient(email));
+        PatientNotFound result = assertThrows(PatientNotFound.class, () -> patientService.getPatient(email));
         //then
         assertEquals("Patient with given email does not exist.", result.getMessage());
     }
@@ -163,9 +165,9 @@ public class PatientServiceTest {
         String email = "a@a.pl";
         when(patientRepository.findByEmail(email)).thenReturn(Optional.empty());
         //when
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, ()-> patientService.editPatient(email, editedPatient));
+        PatientNotFound exception = Assertions.assertThrows(PatientNotFound.class, ()-> patientService.editPatient(email, editedPatient));
         //then
-        assertEquals("Patient not found", exception.getMessage());
+        assertEquals("Patient with given email does not exist.", exception.getMessage());
     }
 
     @Test
@@ -186,7 +188,7 @@ public class PatientServiceTest {
         String patientEmail2 = "nonexistentpatient@gmail.com";
         when(patientRepository.findByEmail(patientEmail2)).thenReturn(Optional.empty());
         // when + then
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> patientService.deletePatient(patientEmail2));
+        PatientNotFound exception = assertThrows(PatientNotFound.class, () -> patientService.deletePatient(patientEmail2));
         assertEquals("Patient with given email does not exist.", exception.getMessage());
         verify(patientRepository, times(1)).findByEmail(patientEmail2);
         verify(patientRepository, never()).delete(any(Patient.class));
