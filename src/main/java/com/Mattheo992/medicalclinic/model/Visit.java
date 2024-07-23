@@ -5,10 +5,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.NaturalId;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @AllArgsConstructor
@@ -26,14 +24,17 @@ public class Visit {
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Visit))
-            return false;
+        if (!(o instanceof Visit)) return false;
         Visit visit = (Visit) o;
-        return id != null &&
-                id.equals(visit.getId());
+        return id != null && id.equals(visit.getId());
     }
 
     @Override
@@ -44,10 +45,11 @@ public class Visit {
     @Override
     public String toString() {
         return "Visit{" +
-                "id : " + id +
-                ", start date : " + startDate +
-                ", end date : " + endDate +
-                ", patient : " + patient +
+                "id=" + id +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", patient=" + patient +
+                ", doctor=" + doctor +
                 '}';
     }
 }

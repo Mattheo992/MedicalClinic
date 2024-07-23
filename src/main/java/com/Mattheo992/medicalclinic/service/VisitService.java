@@ -1,16 +1,21 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.Visit;
 import com.Mattheo992.medicalclinic.model.dtos.VisitDto;
 import com.Mattheo992.medicalclinic.model.mappers.VisitMapper;
+import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.repository.VisitRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +26,7 @@ public class VisitService {
     private final VisitRepository visitRepository;
     private final PatientRepository patientRepository;
     private final VisitMapper visitMapper;
+    private final DoctorRepository doctorRepository;
 
     //Case 1: W przypadku gdy wywołany przez metodę findById z patientRepository zwraca pustego Optional to powinno rzucić
     // wyjątkiem, że nie znaleziono pacjenta o podanym Id.
@@ -37,6 +43,42 @@ public class VisitService {
         }
         List<Visit> visits = visitRepository.findByPatientId(patientId);
         return visitMapper.ListDto(visits);
+    }
+
+    public List<VisitDto> getVisitsByDoctorId(Long doctorId) {
+        Optional<Doctor> doctorOptional = doctorRepository.findById(doctorId);
+        if (doctorOptional.isEmpty()) {
+            throw new IllegalArgumentException("Doctor not found");
+        }
+        List<Visit> visits = visitRepository.findByDoctorId(doctorId);
+        return visitMapper.ListDto(visits);
+    }
+
+    public List<VisitDto> getAvailableVisitsByDoctorSpecializationAndByDate(String specialization, LocalDate date) {
+        List<Doctor> doctors = doctorRepository.findBySpecialization(specialization);
+        if (doctors.isEmpty()) {
+            throw new IllegalArgumentException("No doctors found with given specialization");
+        }
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+        List<Visit> visits = visitRepository.findByDoctorSpecializationAndStartDateBetween(
+                specialization, startOfDay, endOfDay);
+        List<Visit> availableVisits = visits.stream()
+                .filter(visit -> visit.getPatient() == null)
+                .toList();
+
+        return visitMapper.ListDto(availableVisits);
+    }
+
+    public List<VisitDto> getAvailableVisitsByDoctorId(Long doctorId) {
+        Optional<Doctor> doctorOptional = doctorRepository.findById(doctorId);
+        if (doctorOptional.isEmpty()) {
+            throw new IllegalArgumentException("Doctor not found");
+        }
+        List<Visit> visits = visitRepository.findByDoctorId(doctorId);
+        List<Visit> availableVisits = visits.stream().filter(visit -> visit.getPatient() == null).toList();
+        return visitMapper.ListDto(availableVisits);
     }
 
     //    Case 1: W przypadku wywołania metody findById z visitRepository zostanie zwrócony pusty Optional to metoda rzuca wyjątkiem,
@@ -62,6 +104,20 @@ public class VisitService {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new IllegalArgumentException("Patient with given id does not exist."));
         visit.setPatient(patient);
+        return visitRepository.save(visit);
+    }
+
+    @Transactional
+    public Visit registerDoctorForVisit(Long visitId, Long doctorId) {
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new IllegalArgumentException("Visit with given id does not exist."));
+        if (visit.getDoctor() != null) {
+            throw new IllegalArgumentException("Sorry, but visit is already occupied by another doctor.");
+        }
+
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new IllegalArgumentException("Doctor with given id does not exist."));
+        visit.setDoctor(doctor);
         return visitRepository.save(visit);
     }
 

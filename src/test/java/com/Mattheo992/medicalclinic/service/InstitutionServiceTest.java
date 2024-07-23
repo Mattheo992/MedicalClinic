@@ -109,7 +109,7 @@ public class InstitutionServiceTest {
         Long institutionId = 1L;
         Long doctorId = 1L;
         Institution institution = createInstitution(institutionId, "Barlicki");
-        Doctor doctor = new Doctor(doctorId, "asd", "asd", "asd", "asd", "asd", new ArrayList<>());
+        Doctor doctor = new Doctor(doctorId, "asd", "asd", "asd", "asd", "asd", new ArrayList<>(), new ArrayList<>());
         when(institutionRepository.findById(institutionId)).thenReturn(Optional.of(institution));
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
         // When

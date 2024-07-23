@@ -1,9 +1,11 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.Visit;
 import com.Mattheo992.medicalclinic.model.dtos.VisitDto;
 import com.Mattheo992.medicalclinic.model.mappers.VisitMapper;
+import com.Mattheo992.medicalclinic.repository.DoctorRepository;
 import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.repository.VisitRepository;
 import org.junit.jupiter.api.Assertions;
@@ -26,13 +28,14 @@ public class VisitServiceTest {
     VisitRepository visitRepository;
     PatientRepository patientRepository;
     VisitMapper visitMapper;
+    DoctorRepository doctorRepository;
 
     @BeforeEach
     void setup() {
         this.visitRepository = Mockito.mock(VisitRepository.class);
         this.patientRepository = Mockito.mock(PatientRepository.class);
         this.visitMapper = Mappers.getMapper(VisitMapper.class);
-        this.visitService = new VisitService(visitRepository, patientRepository, visitMapper);
+        this.visitService = new VisitService(visitRepository, patientRepository, visitMapper, doctorRepository);
     }
 
 //    @Test
@@ -156,6 +159,7 @@ public class VisitServiceTest {
         Patient patient = new Patient();
         patient.setId(id);
         patient.setEmail("m@m.pl");
-        return new Visit(id, startTime, endTime, patient);
+        Doctor doctor = new Doctor();
+        return new Visit(id, startTime, endTime, patient, doctor);
     }
 }

@@ -11,9 +11,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -52,6 +54,19 @@ public class VisitController {
         visitService.registerPatientForVisit(visitId, patientId);
     }
 
+    @Operation(summary = "Register a doctor for a visit", description = "Associates a doctor with a visit if the visit is not already occupied.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully registered doctor for visit", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Visit is already occupied or invalid IDs provided", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Visit or doctor not found", content = @Content)
+    })
+    @PostMapping("/{visitId}/doctors/{doctorId}")
+    public void registerDoctor(
+            @PathVariable("visitId") Long visitId,
+            @PathVariable("doctorId") Long doctorId) {
+        visitService.registerDoctorForVisit(visitId, doctorId);
+    }
+
     @Operation(summary = "Get visits for a patient", description = "Returned list of visits associated with a patient with given id.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully returned list of visits", content = @Content(mediaType = "application/json", schema = @Schema(implementation = VisitDto.class))),
@@ -61,5 +76,40 @@ public class VisitController {
     public List<VisitDto> getVisitsForPatient(
             @PathVariable("patientId") Long patientId) {
         return visitService.getVisitsByPatientId(patientId);
+    }
+
+    @Operation(summary = "Get visits for a doctor", description = "Returned list of visits associated with a doctor with given id.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully returned list of visits", content = @Content(mediaType = "application/json", schema = @Schema(implementation = VisitDto.class))),
+            @ApiResponse(responseCode = "404", description = "Doctor not found", content = @Content(mediaType = "application/json"))
+    })
+    @GetMapping("/doctor/{doctorId}")
+    public List<VisitDto> getVisitsForDoctor(
+            @PathVariable("doctorId") Long doctorId) {
+        return visitService.getVisitsByDoctorId(doctorId);
+    }
+
+    @Operation(summary = "Get available visits by doctor specialization and date", description = "Returns a list of available visits for the chosen specialization and date.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully returned available visits for the doctor."),
+            @ApiResponse(responseCode = "404", description = "Doctor specialization not found.")
+    })
+    @GetMapping("/doctor/{specialization}/date/{date}")
+    public List<VisitDto> getAvailableVisitsBySpecializationAndDate(
+            @RequestParam("specialization") String specialization,
+            @RequestParam("date")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return visitService.getAvailableVisitsByDoctorSpecializationAndByDate(specialization, date);
+    }
+
+    @Operation(summary = "Get available visits by doctor ID", description = "Returns a list of available visits for the chosen doctor.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully returned available visits for the doctor."),
+            @ApiResponse(responseCode = "404", description = "Doctor not found.")
+    })
+    @GetMapping("/doctors/{doctorId}/available-visits")
+    public List<VisitDto> getAvailableVisitsByDoctorId(
+            @PathVariable("doctorId") Long doctorId) {
+        return visitService.getAvailableVisitsByDoctorId(doctorId);
     }
 }

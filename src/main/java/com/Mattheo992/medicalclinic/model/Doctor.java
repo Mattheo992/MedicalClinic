@@ -1,16 +1,15 @@
 package com.Mattheo992.medicalclinic.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.NaturalId;
+
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+
 
 @Entity
 @AllArgsConstructor
@@ -33,6 +32,10 @@ public class Doctor {
             inverseJoinColumns = @JoinColumn(name = "institution_id")
     )
     private List<Institution> institutions;
+
+    @OneToMany(mappedBy = "doctor")
+    @JsonIgnore
+    private List<Visit> visits;
 
     @Override
     public boolean equals(Object o) {

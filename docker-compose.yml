@@ -3,7 +3,8 @@ services:
   medicalclinic:
     container_name: medicalclinic
     build:
-      context: .
+      context: ./MedicalClinic
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
@@ -13,8 +14,25 @@ services:
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
     depends_on:
       - postgres
-    links:
+    networks:
+      - backend
+
+  patientmicroservice:
+    container_name: patientmicroservice
+    build:
+      context: ./PatientMicroservice
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+    depends_on:
       - postgres
+    networks:
+      - backend
 
   postgres:
     image: postgres:latest
@@ -25,6 +43,8 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    networks:
+      - backend
 
   pgadmin:
     image: dpage/pgadmin4
@@ -36,3 +56,9 @@ services:
       - "80:80"
     depends_on:
       - postgres
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
