@@ -1,7 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
 import com.Mattheo992.medicalclinic.exception.exceptions.PatientNotFound;
-import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.User;
 import com.Mattheo992.medicalclinic.model.dtos.PatientDto;
@@ -12,10 +11,8 @@ import com.Mattheo992.medicalclinic.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
@@ -34,7 +31,7 @@ public class PatientServiceTest {
     UserRepository userRepository;
     PatientDtoMapper patientDtoMapper;
     UserMapper userMapper;
-    PatientNotFound patientNotFound;
+
 
     @BeforeEach
     void setup() {

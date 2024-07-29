@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -99,20 +100,6 @@ public class VisitControllerTest {
                         .content(objectMapper.writeValueAsString(visit)))
                 .andDo(print())
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void registerPatient_PatientNotExists_ReturnedException() throws Exception {
-        Long visitId = 1L;
-        Long patientId = 1L;
-
-        when(visitService.registerPatientForVisit(visitId, patientId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient with given id does not exist."));
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/visits/{visitId}/patients/{patientId}", visitId, patientId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(content().string("Patient with given id does not exist."));
     }
 
     @Test

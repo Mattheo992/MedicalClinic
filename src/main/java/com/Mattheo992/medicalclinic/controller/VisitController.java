@@ -94,10 +94,10 @@ public class VisitController {
             @ApiResponse(responseCode = "200", description = "Successfully returned available visits for the doctor."),
             @ApiResponse(responseCode = "404", description = "Doctor specialization not found.")
     })
-    @GetMapping("/doctor/{specialization}/date/{date}")
+    @GetMapping("/doctors/{specialization}/date/{date}")
     public List<VisitDto> getAvailableVisitsBySpecializationAndDate(
-            @RequestParam("specialization") String specialization,
-            @RequestParam("date")
+            @PathVariable("specialization") String specialization,
+            @PathVariable("date")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return visitService.getAvailableVisitsByDoctorSpecializationAndByDate(specialization, date);
     }

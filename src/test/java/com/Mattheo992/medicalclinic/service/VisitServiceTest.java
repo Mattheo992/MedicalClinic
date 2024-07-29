@@ -38,47 +38,42 @@ public class VisitServiceTest {
         this.visitService = new VisitService(visitRepository, patientRepository, visitMapper, doctorRepository);
     }
 
-//    @Test
-//    void getVisitsByPatientId_PatientExist_ReturnedVisitsList() {
-//        // Arrange
-//        Long patientId = 1L;
-//        Patient patient = new Patient();
-//        patient.setId(patientId);
-//
-//        Visit visit1 = new Visit();
-//        visit1.setId(1L);
-//        visit1.setStartDate(LocalDateTime.of(2023, 7, 1, 10, 0));
-//        visit1.setEndDate(LocalDateTime.of(2023, 7, 1, 11, 0));
-//        visit1.setPatient(patient);
-//
-//        Visit visit2 = new Visit();
-//        visit2.setId(2L);
-//        visit2.setStartDate(LocalDateTime.of(2023, 7, 2, 14, 0));
-//        visit2.setEndDate(LocalDateTime.of(2023, 7, 2, 15, 0));
-//        visit2.setPatient(patient);
-//
-//        List<Visit> visits = new ArrayList<>();
-//        visits.add(visit1);
-//        visits.add(visit2);
-//
-//        VisitDto visitDto1 = new VisitDto(visit1.getStartDate(), visit1.getEndDate());
-//        VisitDto visitDto2 = new VisitDto(visit2.getStartDate(), visit2.getEndDate());
-//        List<VisitDto> expectedVisitDtoList = List.of(visitDto1, visitDto2);
-//
-//        // Stubbing behavior of mocks
-//        when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient));
-//        when(visitRepository.findByPatientId(patientId)).thenReturn(visits);
-//        when(visitMapper.ListDto(visits)).thenReturn(expectedVisitDtoList);
-//
-//        // Act
-//        List<VisitDto> result = visitService.getVisitsByPatientId(patientId);
-//
-//        // Assert
-//        assertEquals(expectedVisitDtoList.size(), result.size());
-//        assertEquals(expectedVisitDtoList.get(0).getStartDate(), result.get(0).getStartDate());
-//        assertEquals(expectedVisitDtoList.get(1).getStartDate(), result.get(1).getStartDate());
-//
-//    }
+    @Test
+    void getVisitsByPatientId_PatientExist_ReturnedVisitsList() {
+        // Arrange
+        Long patientId = 1L;
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        Visit visit1 = new Visit();
+        visit1.setId(1L);
+        visit1.setStartDate(LocalDateTime.of(2025, 7, 1, 10, 0));
+        visit1.setEndDate(LocalDateTime.of(2025, 7, 1, 11, 0));
+        visit1.setPatient(patient);
+
+        Visit visit2 = new Visit();
+        visit2.setId(2L);
+        visit2.setStartDate(LocalDateTime.of(2025, 7, 2, 14, 0));
+        visit2.setEndDate(LocalDateTime.of(2025, 7, 2, 15, 0));
+        visit2.setPatient(patient);
+
+        List<Visit> visits = new ArrayList<>();
+        visits.add(visit1);
+        visits.add(visit2);
+
+        VisitDto visitDto1 = new VisitDto(visit1.getStartDate(), visit1.getEndDate());
+        VisitDto visitDto2 = new VisitDto(visit2.getStartDate(), visit2.getEndDate());
+        List<VisitDto> expectedVisitDtoList = List.of(visitDto1, visitDto2);
+
+        when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient));
+        when(visitRepository.findByPatientId(patientId)).thenReturn(visits);
+
+        List<VisitDto> result = visitService.getVisitsByPatientId(patientId);
+
+        assertEquals(expectedVisitDtoList.size(), result.size());
+        assertEquals(expectedVisitDtoList.get(0).getStartDate(), result.get(0).getStartDate());
+        assertEquals(expectedVisitDtoList.get(1).getStartDate(), result.get(1).getStartDate());
+    }
 
     @Test
     void getVisitsByPatientId_PatientNotExists_ReturnedException() {
