@@ -19,4 +19,5 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
 
     List<Visit> findByDoctorSpecializationAndStartDateBetween(String specialization, LocalDateTime startOfDay, LocalDateTime endOfDay);
 
+    List<Visit> findByStartDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 }

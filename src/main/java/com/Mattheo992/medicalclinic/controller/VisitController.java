@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -111,5 +112,37 @@ public class VisitController {
     public List<VisitDto> getAvailableVisitsByDoctorId(
             @PathVariable("doctorId") Long doctorId) {
         return visitService.getAvailableVisitsByDoctorId(doctorId);
+    }
+
+    @Operation(summary = "Get visits for a doctor with given specialization and a date range", description = "Returns a list of visits associated with a doctor in a given date range.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully returned list of visits", content = @Content(mediaType = "application/json", schema = @Schema(implementation = VisitDto.class))),
+            @ApiResponse(responseCode = "404", description = "Doctor not found", content = @Content(mediaType = "application/json"))
+    })
+    @GetMapping()
+    public List<VisitDto> getVisitsByDoctorSpecializationAndStartDateBetween(
+            @RequestParam("specialization") String specialization,
+            @RequestParam("start")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return visitService.getVisitsBySpecializationAndDateRange(specialization, start, end);
+    }
+
+    @Operation(summary = "Cancel a visit", description = "Cancels a visit by its ID and returns a confirmation message.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Visit successfully cancelled", content = @Content(mediaType = "text/plain")),
+            @ApiResponse(responseCode = "404", description = "Visit not found", content = @Content)
+    })
+    @DeleteMapping("/{visitId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelVisit(@PathVariable Long visitId) {
+     visitService.cancelVisit(visitId);}
+
+    @GetMapping("/range")
+    public List<VisitDto> getAvailableVisitsAndDateRange(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return visitService.getAvailableVisitsAndDateRange(start, end);
     }
 }

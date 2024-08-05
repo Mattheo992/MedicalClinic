@@ -1,5 +1,6 @@
 package com.Mattheo992.medicalclinic.service;
 
+import com.Mattheo992.medicalclinic.exception.exceptions.DoctorNotFound;
 import com.Mattheo992.medicalclinic.model.Doctor;
 import com.Mattheo992.medicalclinic.model.Patient;
 import com.Mattheo992.medicalclinic.model.Visit;
@@ -10,6 +11,7 @@ import com.Mattheo992.medicalclinic.repository.PatientRepository;
 import com.Mattheo992.medicalclinic.repository.VisitRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import javax.print.Doc;
@@ -46,11 +48,8 @@ public class VisitService {
     }
 
     public List<VisitDto> getVisitsByDoctorId(Long doctorId) {
-        Optional<Doctor> doctorOptional = doctorRepository.findById(doctorId);
-        if (doctorOptional.isEmpty()) {
-            throw new IllegalArgumentException("Doctor not found");
-        }
-        List<Visit> visits = visitRepository.findByDoctorId(doctorId);
+        Doctor doctor = doctorRepository.findById(doctorId).orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+        List<Visit> visits = doctor.getVisits();
         return visitMapper.ListDto(visits);
     }
 
@@ -72,13 +71,29 @@ public class VisitService {
     }
 
     public List<VisitDto> getAvailableVisitsByDoctorId(Long doctorId) {
-        Optional<Doctor> doctorOptional = doctorRepository.findById(doctorId);
-        if (doctorOptional.isEmpty()) {
-            throw new IllegalArgumentException("Doctor not found");
-        }
-        List<Visit> visits = visitRepository.findByDoctorId(doctorId);
+        Doctor doctor = doctorRepository.findById(doctorId).orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+        List<Visit> visits = doctor.getVisits();
         List<Visit> availableVisits = visits.stream().filter(visit -> visit.getPatient() == null).toList();
         return visitMapper.ListDto(availableVisits);
+    }
+
+    public List<VisitDto> getVisitsBySpecializationAndDateRange(String specialization, LocalDate start, LocalDate end) {
+        List<Doctor> doctors = doctorRepository.findBySpecialization(specialization);
+        if (doctors.isEmpty()) {
+            throw new IllegalArgumentException("No doctors found with the given specialization.");
+        }
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+
+        List<Visit> visits = doctors.stream()
+                .flatMap(doctor -> doctor.getVisits().stream())
+                .filter(visit -> {
+                    LocalDateTime visitStartDate = visit.getStartDate();
+                    return !visitStartDate.isBefore(startDateTime) && !visitStartDate.isAfter(endDateTime);
+                }).filter(visit -> visit.getPatient() == null)
+                .toList();
+
+        return visitMapper.ListDto(visits);
     }
 
     //    Case 1: W przypadku wywołania metody findById z visitRepository zostanie zwrócony pusty Optional to metoda rzuca wyjątkiem,
@@ -149,6 +164,25 @@ public class VisitService {
         visit.setStartDate(startDate);
         visit.setEndDate(endDate);
         return visitRepository.save(visit);
+    }
+
+    @Transactional
+    public void cancelVisit(Long visitId) {
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new IllegalArgumentException("Visit with given id does not exist."));
+        visitRepository.delete(visit);
+    }
+
+    public List<VisitDto> getAvailableVisitsAndDateRange(LocalDate start, LocalDate end) {
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+
+        List<Visit> visits = visitRepository.findByStartDateBetween(startDateTime, endDateTime);
+        List<Visit> availableVisits = visits.stream()
+                .filter(visit -> visit.getPatient() == null)
+                .toList();
+
+        return visitMapper.ListDto(availableVisits);
     }
 
     private void checkIsStartDateIsAvailable(LocalDateTime startDate) {
