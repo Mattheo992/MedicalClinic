@@ -1,0 +1,108 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Mattheo992
+      changes:
+        - createTable:
+            tableName: PATIENT
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_patient_id
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    uniqueConstraintName: uk_patient_email
+              - column:
+                  name: id_card_no
+                  type: VARCHAR(255)
+              - column:
+                  name: first_name
+                  type: VARCHAR(255)
+              - column:
+                  name: last_name
+                  type: VARCHAR(255)
+              - column:
+                  name: phone_number
+                  type: VARCHAR(255)
+              - column:
+                  name: birthday
+                  type: DATE
+
+  - changeSet:
+      id: 2
+      author: Mattheo992
+      changes:
+        - createTable:
+            tableName: app_user
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_user_id
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    uniqueConstraintName: uk_user_username
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+        - addColumn:
+            tableName: PATIENT
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: PATIENT
+            constraintName: fk_patient_user
+            referencedTableName: app_user
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+
+  - changeSet:
+      id: 3
+      author: Mattheo992
+      changes:
+        - createTable:
+            tableName: VISIT
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_visit_id
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: start_date
+                  type: TIMESTAMP
+              - column:
+                  name: end_date
+                  type: TIMESTAMP
+              - column:
+                  name: patient_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_visit_patient
+                    references: PATIENT(id)
+                    onDelete: CASCADE
+                    onUpdate: CASCADE

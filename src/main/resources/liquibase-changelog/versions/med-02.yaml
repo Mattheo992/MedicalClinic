@@ -1,0 +1,120 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: Mattheo992
+      changes:
+        - createTable:
+            tableName: DOCTOR
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_doctor_id
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: surname
+                  type: VARCHAR(255)
+              - column:
+                  name: specialization
+                  type: VARCHAR(255)
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    uniqueConstraintName: uk_doctor_email
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+
+  - changeSet:
+      id: 5
+      author: Mattheo992
+      changes:
+        - createTable:
+            tableName: INSTITUTION
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_institution_id
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: institutionName
+                  type: VARCHAR(255)
+              - column:
+                  name: city
+                  type: VARCHAR(255)
+              - column:
+                  name: zipCode
+                  type: VARCHAR(20)
+              - column:
+                  name: streetName
+                  type: VARCHAR(255)
+              - column:
+                  name: numberOfStreet
+                  type: BIGINT
+  - changeSet:
+      id: 6
+      author: Mattheo992
+      changes:
+        - createTable:
+            tableName: doctor_institution
+            columns:
+              - column:
+                  name: doctor_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: institution_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: doctor_institution
+            columnNames: doctor_id,institution_id
+            constraintName: pk_doctor_institution
+        - addForeignKeyConstraint:
+            baseTableName: doctor_institution
+            baseColumnNames: doctor_id
+            constraintName: fk_doctor_institution_doctor
+            referencedTableName: DOCTOR
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: doctor_institution
+            baseColumnNames: institution_id
+            constraintName: fk_doctor_institution_institution
+            referencedTableName: INSTITUTION
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+  - changeSet:
+      id: 7
+      author: Mattheo992
+      changes:
+        - addColumn:
+            tableName: VISIT
+            columns:
+              - column:
+                  name: doctor_id
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseColumnNames: doctor_id
+            baseTableName: VISIT
+            constraintName: fk_visit_doctor
+            referencedTableName: DOCTOR
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
